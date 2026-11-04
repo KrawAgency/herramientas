@@ -1,7 +1,7 @@
 {
   "name": "Mis herramientas · Fernando",
   "short_name": "Herramientas",
-  "description": "Lanzador de mis herramientas: UVC, casa, salud y utilidades.",
+  "description": "Lanzador de mis herramientas: trabajo, casa, salud y utilidades.",
   "lang": "es-MX",
   "start_url": "./",
   "scope": "./",
