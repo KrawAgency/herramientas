@@ -155,10 +155,12 @@
     const out = await PDFDocument.create();
     const total = src.getPageCount();
     for (let i = 0; i < total; i++) {
-      const embedded = await out.embedPage(src.getPage(i));
-      const { width, height } = embedded;
+      const srcPage = src.getPage(i);
+      // Una página en blanco no tiene contenido que incrustar: solo crece
+      const embedded = srcPage.node.Contents() ? await out.embedPage(srcPage) : null;
+      const { width, height } = embedded || srcPage.getSize();
       const page = out.addPage([width + margins.left + margins.right, height + margins.top + margins.bottom]);
-      page.drawPage(embedded, { x: margins.left, y: margins.bottom, width, height });
+      if (embedded) page.drawPage(embedded, { x: margins.left, y: margins.bottom, width, height });
       onProgress(Math.round(((i + 1) / total) * 100));
     }
     return out.save();
