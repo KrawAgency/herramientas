@@ -50,7 +50,7 @@
       position: relative;
       z-index: 1;
       max-width: 860px;
-      margin: 0 auto 36px;
+      margin: 0 auto 20px;
       display: flex;
       align-items: flex-end;
       justify-content: space-between;
@@ -85,6 +85,111 @@
       white-space: nowrap;
       align-self: center;
     }
+
+    /* ── Categorías y orden ── */
+    .toolbar {
+      position: relative;
+      z-index: 1;
+      max-width: 860px;
+      margin: 0 auto 20px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px 16px;
+    }
+
+    .chips {
+      display: flex;
+      gap: 6px;
+      flex: 1 1 100%;
+      min-width: 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+      margin: 0 -16px;
+      padding: 0 16px;
+    }
+
+    .chips::-webkit-scrollbar { display: none; }
+
+    .chip {
+      flex: none;
+      min-height: 34px;
+      padding: 0 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      color: var(--text);
+      font: inherit;
+      font-size: 13px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .chip span {
+      margin-left: 4px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .chip:hover { background: var(--hover); }
+
+    .chip[aria-pressed="true"] {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--bg);
+      font-weight: 600;
+    }
+
+    .chip[aria-pressed="true"] span { color: var(--bg); }
+
+    .chip:focus-visible,
+    .sort select:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .sort {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .sort select {
+      min-height: 34px;
+      padding: 0 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      color-scheme: dark;
+      font: inherit;
+      font-size: 13px;
+    }
+
+    @media (min-width: 780px) {
+      .chips {
+        flex: 1 1 0;
+        flex-wrap: wrap;
+        overflow: visible;
+        margin: 0;
+        padding: 0;
+      }
+    }
+
+    .group-title {
+      grid-column: 1 / -1;
+      margin-top: 14px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .group-title:first-child { margin-top: 0; }
 
     /* ── Grid ── */
     .grid {
@@ -220,6 +325,18 @@
     <span class="tool-count" id="count">—</span>
   </header>
 
+  <div class="toolbar">
+    <div class="chips" id="chips" role="group" aria-label="Categorías"></div>
+    <label class="sort">
+      Ordenar
+      <select id="sort">
+        <option value="cat">Por categoría</option>
+        <option value="az">A–Z</option>
+        <option value="za">Z–A</option>
+      </select>
+    </label>
+  </div>
+
   <div class="grid" id="grid"></div>
 
   <footer id="footer"></footer>
@@ -232,7 +349,7 @@
     //    desc  → descripción corta (1 línea idealmente)
     //    icon  → emoji
     //    color → color hexadecimal del acento de la card
-    //    tag   → etiqueta pequeña debajo (ej: "Casa", "UVC")
+    //    tag   → categoría; un tag nuevo crea su filtro solo (ej: "Casa", "UVC")
     //    url   → URL completa de la herramienta
     // ╚══════════════════════════════════════════════════════╝
 
@@ -464,30 +581,97 @@
     const grid  = document.getElementById('grid');
     const count = document.getElementById('count');
     const footer = document.getElementById('footer');
+    const chips = document.getElementById('chips');
+    const sort  = document.getElementById('sort');
+    const ALL   = 'Todas';
 
-    if (tools.length === 0) {
-      grid.innerHTML = '<p class="empty">Sin herramientas configuradas aún.</p>';
-    } else {
-      tools.forEach(t => {
-        const a = document.createElement('a');
-        a.href        = t.url;
-        a.target      = '_blank';
-        a.rel         = 'noopener';
-        a.className   = 'card';
-        a.style.setProperty('--card-color', t.color);
-        a.innerHTML = `
-          <div class="card-icon">${t.icon}</div>
-          <div class="card-name">${t.name}</div>
-          <div class="card-desc">${t.desc}</div>
-          <div class="card-tag">${t.tag}</div>
-        `;
-        grid.appendChild(a);
+    // Recuerda la categoría y el orden en este dispositivo
+    const saved = {
+      get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+      set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+    };
+
+    const byName = (a, b) => a.name.localeCompare(b.name, 'es');
+
+    // Categorías con su número de herramientas: la más grande primero
+    const totals = {};
+    tools.forEach(t => { totals[t.tag] = (totals[t.tag] || 0) + 1; });
+    const tags = Object.keys(totals)
+      .sort((a, b) => totals[b] - totals[a] || a.localeCompare(b, 'es'));
+
+    let currentTag  = tags.includes(saved.get('launcher-tag')) ? saved.get('launcher-tag') : ALL;
+    sort.value      = saved.get('launcher-sort') || 'cat';
+    if (!sort.value) sort.value = 'cat';
+
+    function addCard(t) {
+      const a = document.createElement('a');
+      a.href        = t.url;
+      a.target      = '_blank';
+      a.rel         = 'noopener';
+      a.className   = 'card';
+      a.style.setProperty('--card-color', t.color);
+      a.innerHTML = `
+        <div class="card-icon">${t.icon}</div>
+        <div class="card-name">${t.name}</div>
+        <div class="card-desc">${t.desc}</div>
+        <div class="card-tag">${t.tag}</div>
+      `;
+      grid.appendChild(a);
+    }
+
+    function renderTools() {
+      grid.innerHTML = '';
+      const shown = tools.filter(t => currentTag === ALL || t.tag === currentTag).sort(byName);
+
+      if (sort.value === 'za') shown.reverse();
+
+      if (sort.value === 'cat' && currentTag === ALL) {
+        tags.forEach(tag => {
+          const title = document.createElement('h2');
+          title.className = 'group-title';
+          title.textContent = tag;
+          grid.appendChild(title);
+          shown.filter(t => t.tag === tag).forEach(addCard);
+        });
+      } else {
+        shown.forEach(addCard);
+      }
+
+      count.textContent = currentTag !== ALL
+        ? `${shown.length} de ${tools.length}`
+        : tools.length === 1 ? '1 herramienta' : `${tools.length} herramientas`;
+
+      chips.querySelectorAll('.chip').forEach(c => {
+        c.setAttribute('aria-pressed', c.dataset.tag === currentTag);
       });
     }
 
-    count.textContent = tools.length === 1
-      ? '1 herramienta'
-      : `${tools.length} herramientas`;
+    if (tools.length === 0) {
+      grid.innerHTML = '<p class="empty">Sin herramientas configuradas aún.</p>';
+      count.textContent = '0 herramientas';
+    } else {
+      [ALL, ...tags].forEach(tag => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'chip';
+        b.dataset.tag = tag;
+        b.innerHTML = `${tag}<span>${tag === ALL ? tools.length : totals[tag]}</span>`;
+        b.addEventListener('click', () => {
+          currentTag = tag;
+          saved.set('launcher-tag', tag);
+          renderTools();
+          b.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+        });
+        chips.appendChild(b);
+      });
+
+      sort.addEventListener('change', () => {
+        saved.set('launcher-sort', sort.value);
+        renderTools();
+      });
+
+      renderTools();
+    }
 
     const now = new Date();
     footer.textContent =
