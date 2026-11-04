@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Semana en el comal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Nunito+Sans:ital,opsz,wght@0,6..12,400;0,6..12,600;0,6..12,700;1,6..12,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --limestone:#F4EFE5;
+    --paper:#FFFDF8;
+    --mar:#0E5C54;
+    --mar-deep:#0A423C;
+    --marigold:#E0972A;
+    --marigold-soft:#F7E4BE;
+    --guava:#C65B72;
+    --guava-soft:#F3D9DE;
+    --seagreen:#5E9B86;
+    --seagreen-soft:#D8E8DF;
+    --ink:#241C17;
+    --muted:#82705F;
+    --line:#E7DECE;
+    --shadow:0 1px 2px rgba(36,28,23,.04),0 8px 24px rgba(36,28,23,.06);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:'Nunito Sans',system-ui,sans-serif;
+    background:var(--limestone);
+    color:var(--ink);
+    line-height:1.5;
+    padding-bottom:64px;
+    overflow-x:hidden;
+  }
+  /* ---------- header ---------- */
+  header{
+    background:var(--mar);
+    color:#F7F3EA;
+    padding:26px 20px 20px;
+    position:relative;
+    overflow:hidden;
+  }
+  header::after{
+    content:"";position:absolute;right:-40px;top:-40px;width:180px;height:180px;
+    border-radius:50%;background:radial-gradient(circle at 30% 30%,rgba(224,151,42,.35),transparent 70%);
+    pointer-events:none;
+  }
+  .eyebrow{
+    font-size:12px;letter-spacing:.18em;text-transform:uppercase;
+    color:#9FCEC5;font-weight:700;margin-bottom:6px;
+  }
+  h1{
+    font-family:'Bricolage Grotesque',sans-serif;
+    font-weight:800;font-size:clamp(28px,7vw,40px);line-height:1.02;
+    letter-spacing:-.02em;
+  }
+  .sub{color:#CDE5DF;font-size:14.5px;margin-top:8px;max-width:34ch}
+  /* ---------- week ribbon ---------- */
+  .ribbon{
+    display:flex;gap:6px;margin-top:20px;position:relative;z-index:2;
+  }
+  .rib{
+    flex:1;border:none;cursor:pointer;border-radius:10px;
+    background:rgba(255,255,255,.10);color:#EAF4F1;
+    padding:9px 2px 8px;font-family:inherit;
+    display:flex;flex-direction:column;align-items:center;gap:5px;
+    transition:transform .15s ease,background .15s ease;
+  }
+  .rib:hover,.rib:focus-visible{background:rgba(255,255,255,.20);transform:translateY(-2px);outline:none}
+  .rib .d{font-size:12px;font-weight:700;letter-spacing:.02em}
+  .rib .dot{width:9px;height:9px;border-radius:50%}
+  .dot.fresco{background:var(--marigold)}
+  .dot.calma{background:var(--seagreen)}
+  .dot.descanso{background:var(--guava)}
+  /* ---------- tabs ---------- */
+  nav{
+    position:sticky;top:0;z-index:20;background:var(--limestone);
+    border-bottom:1px solid var(--line);
+    display:flex;gap:2px;padding:6px 12px;overflow-x:auto;
+    -webkit-overflow-scrolling:touch;scrollbar-width:none;
+  }
+  nav::-webkit-scrollbar{display:none}
+  .tab{
+    flex:0 0 auto;border:none;background:none;cursor:pointer;font-family:inherit;
+    font-weight:700;font-size:14.5px;color:var(--muted);
+    padding:11px 15px;border-radius:10px;white-space:nowrap;
+    transition:color .15s,background .15s;
+  }
+  .tab[aria-selected="true"]{color:var(--mar);background:#fff}
+  main{max-width:760px;margin:0 auto;padding:18px 14px 40px}
+  .panel{display:none;animation:fade .25s ease}
+  .panel.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  /* ---------- week header row ---------- */
+  .week-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:12px}
+  .week-head p{font-size:14px;color:var(--muted)}
+  .shuffle{
+    border:1px solid var(--line);background:var(--paper);color:var(--mar);
+    font-family:inherit;font-weight:700;font-size:13.5px;cursor:pointer;
+    padding:9px 13px;border-radius:999px;display:inline-flex;align-items:center;gap:7px;
+    box-shadow:var(--shadow);transition:transform .15s;
+  }
+  .shuffle:hover{transform:translateY(-1px)}
+  .shuffle:active{transform:translateY(0)}
+  /* ---------- day card ---------- */
+  .day{
+    background:var(--paper);border-radius:18px;padding:0;overflow:hidden;
+    box-shadow:var(--shadow);margin-bottom:14px;scroll-margin-top:70px;
+    border:1px solid #F0E8DA;
+  }
+  .day-head{
+    width:100%;text-align:left;border:none;background:none;cursor:pointer;font-family:inherit;
+    padding:15px 16px;display:flex;flex-direction:column;gap:8px;
+  }
+  .dh-row{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%}
+  .day-caret{color:var(--muted);font-size:13px;transition:transform .2s}
+  .day.open .day-caret{transform:rotate(180deg)}
+  .day-summary{font-size:13px;color:var(--muted);line-height:1.45}
+  .day-body{max-height:0;overflow:hidden;transition:max-height .3s ease}
+  .day-inner{padding:2px 16px 14px}
+  .day-sched{font-size:12.5px;color:var(--muted);margin:10px 0 6px;padding-bottom:10px;border-bottom:1px dashed var(--line)}
+  .day-sched b{color:var(--ink);font-weight:700}
+  .cambiar{
+    border:none;background:var(--limestone);color:var(--mar);font-family:inherit;font-weight:700;
+    font-size:11px;cursor:pointer;padding:3px 10px;border-radius:999px;letter-spacing:.02em;
+  }
+  .cambiar:hover{background:#e9e2d4}
+  .day-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:12px}
+  .day-name{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:22px;letter-spacing:-.01em}
+  .sched{font-size:12.5px;color:var(--muted);text-align:right;line-height:1.35}
+  .sched b{color:var(--ink);font-weight:700}
+  .badge{
+    display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;
+    padding:4px 9px;border-radius:999px;letter-spacing:.01em;margin-top:5px;
+  }
+  .badge.fresco{background:var(--marigold-soft);color:#8a5a08}
+  .badge.calma{background:var(--seagreen-soft);color:#356152}
+  .badge.descanso{background:var(--guava-soft);color:#8f374b}
+  /* meal rows */
+  .meal{display:flex;gap:11px;padding:10px 0;border-top:1px dashed var(--line)}
+  .meal:first-of-type{border-top:none;padding-top:2px}
+  .ico{
+    flex:0 0 34px;height:34px;border-radius:10px;display:grid;place-items:center;
+    font-size:17px;background:var(--limestone);
+  }
+  .meal-body{flex:1;min-width:0}
+  .meal-label{font-size:11px;text-transform:uppercase;letter-spacing:.09em;font-weight:700;color:var(--muted);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .tier{font-size:10px;padding:2px 7px;border-radius:6px;background:var(--limestone);color:var(--mar);letter-spacing:.03em}
+  .meal-dish{font-weight:700;font-size:15.5px;margin-top:2px;color:var(--ink)}
+  .meal-note{font-size:13px;color:var(--muted);margin-top:2px}
+  /* rotation chips */
+  .rot{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}
+  .chip{
+    border:1px solid var(--line);background:#fff;cursor:pointer;font-family:inherit;
+    font-size:13px;font-weight:700;color:var(--ink);padding:7px 12px;border-radius:999px;
+    display:inline-flex;align-items:center;gap:7px;transition:border-color .15s,background .15s,transform .1s;
+  }
+  .chip:hover{border-color:var(--marigold)}
+  .chip:active{transform:scale(.96)}
+  .chip .k{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+  .chip .swap{opacity:.4;font-size:11px}
+  /* nightly */
+  .nightly{
+    margin-top:12px;padding:9px 12px;border-radius:12px;background:var(--limestone);
+    font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:8px;
+  }
+  .nightly b{color:var(--ink)}
+  /* ---------- recipes ---------- */
+  .filter{display:flex;gap:7px;margin-bottom:16px;flex-wrap:wrap}
+  .fbtn{
+    border:1px solid var(--line);background:var(--paper);cursor:pointer;font-family:inherit;
+    font-weight:700;font-size:13px;padding:8px 13px;border-radius:999px;color:var(--muted);
+    display:inline-flex;align-items:center;gap:6px;transition:all .15s;
+  }
+  .fbtn[aria-pressed="true"]{background:var(--mar);color:#fff;border-color:var(--mar)}
+  .lvl-dot{width:8px;height:8px;border-radius:50%}
+  .lvl-1{background:#6BB39A}.lvl-2{background:var(--marigold)}.lvl-3{background:var(--guava)}
+  .recipe{
+    background:var(--paper);border-radius:16px;box-shadow:var(--shadow);
+    margin-bottom:11px;overflow:hidden;border:1px solid #F0E8DA;
+  }
+  .rec-head{
+    width:100%;text-align:left;border:none;background:none;cursor:pointer;font-family:inherit;
+    padding:15px 16px;display:flex;align-items:center;gap:12px;
+  }
+  .rec-lvl{flex:0 0 auto;width:10px;height:10px;border-radius:50%}
+  .rec-title{flex:1;font-weight:700;font-size:15.5px}
+  .rec-time{font-size:12.5px;color:var(--muted);font-weight:700}
+  .rec-caret{color:var(--muted);transition:transform .2s;font-size:13px}
+  .recipe.open .rec-caret{transform:rotate(180deg)}
+  .rec-body{max-height:0;overflow:hidden;transition:max-height .3s ease}
+  .rec-inner{padding:0 16px 16px;border-top:1px solid var(--line)}
+  .rec-inner h4{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:14px 0 7px}
+  .ings{display:flex;flex-wrap:wrap;gap:6px}
+  .ing{font-size:12.5px;background:var(--limestone);padding:5px 10px;border-radius:8px;font-weight:600}
+  .steps{font-size:14px;color:#3a2f27}
+  .steps li{margin:5px 0 5px 18px}
+  /* ---------- shopping + prep ---------- */
+  .group{background:var(--paper);border-radius:16px;box-shadow:var(--shadow);border:1px solid #F0E8DA;padding:6px 4px 10px;margin-bottom:14px}
+  .group h3{
+    font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:16px;
+    padding:12px 14px 8px;display:flex;align-items:center;gap:9px;
+  }
+  .g-tag{font-size:10.5px;font-weight:700;color:#fff;padding:3px 8px;border-radius:6px;letter-spacing:.02em}
+  .check{
+    display:flex;align-items:center;gap:11px;padding:9px 14px;cursor:pointer;
+    font-size:14.5px;border-top:1px solid var(--line);user-select:none;
+  }
+  .check:first-of-type{border-top:none}
+  .box{
+    flex:0 0 21px;height:21px;border-radius:6px;border:2px solid var(--line);
+    display:grid;place-items:center;transition:all .15s;
+  }
+  .box svg{width:12px;height:12px;stroke:#fff;stroke-width:3.5;fill:none;opacity:0;transition:opacity .12s}
+  .check.done .box{background:var(--mar);border-color:var(--mar)}
+  .check.done .box svg{opacity:1}
+  .check.done .lbl{color:var(--muted);text-decoration:line-through}
+  .store{margin-left:auto;font-size:11px;color:var(--muted);font-weight:700;background:var(--limestone);padding:3px 8px;border-radius:6px}
+  .lead{font-size:14.5px;color:var(--muted);margin-bottom:16px;line-height:1.55}
+  .lead b{color:var(--ink)}
+  /* inspiration */
+  .insp-h{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:19px;letter-spacing:-.01em;margin:26px 0 3px;display:flex;align-items:center;gap:9px}
+  .insp-h:first-of-type{margin-top:0}
+  .insp-sub{font-size:13px;color:var(--muted);margin-bottom:13px}
+  .icard{background:var(--paper);border:1px solid #F0E8DA;border-radius:14px;box-shadow:var(--shadow);padding:13px 15px;margin-bottom:10px}
+  .icard-t{font-weight:700;font-size:15.5px;display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+  .icard-why{font-size:13.5px;color:var(--muted);margin-top:6px;line-height:1.5}
+  .pill{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;white-space:nowrap;flex:0 0 auto}
+  .pill.falta{background:var(--marigold-soft);color:#8a5a08}
+  .pill.cero{background:var(--seagreen-soft);color:#356152}
+  .goes{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;align-items:center}
+  .goes .k,.hn .k{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700}
+  .hn{margin-top:9px;display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+  .ing.need{background:var(--marigold-soft);color:#8a5a08}
+  .smoothie{display:flex;gap:13px;align-items:flex-start}
+  .swatch{flex:0 0 44px;height:44px;border-radius:13px;box-shadow:inset 0 -7px 11px rgba(0,0,0,.10),inset 0 3px 6px rgba(255,255,255,.35);margin-top:2px}
+  .smoothie .icard-t{font-size:15.5px}
+  /* legend */
+  .legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:14px;font-size:12px;color:var(--muted);font-weight:600}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  footer{text-align:center;font-size:12px;color:var(--muted);padding:22px 16px 8px}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Puerto Morelos · tu semana</div>
+  <h1>Semana en el comal</h1>
+  <p class="sub">Tu horario ya está resuelto. Cocinas fresco lunes y sábado, el martes preparas las bases, y el resto solo recalientas y armas.</p>
+  <div class="ribbon" id="ribbon"></div>
+  <div class="legend">
+    <span><i class="dot fresco" style="width:9px;height:9px;border-radius:50%"></i> Cocinar fresco</span>
+    <span><i class="dot calma" style="width:9px;height:9px;border-radius:50%"></i> Fácil / recalentar</span>
+    <span><i class="dot descanso" style="width:9px;height:9px;border-radius:50%"></i> Descanso · bases</span>
+  </div>
+</header>
+
+<nav id="tabs" role="tablist">
+  <button class="tab" role="tab" aria-selected="true" data-tab="semana">La semana</button>
+  <button class="tab" role="tab" aria-selected="false" data-tab="recetas">Recetas</button>
+  <button class="tab" role="tab" aria-selected="false" data-tab="super">Súper</button>
+  <button class="tab" role="tab" aria-selected="false" data-tab="prep">Prep</button>
+  <button class="tab" role="tab" aria-selected="false" data-tab="inspiracion">Inspiración</button>
+</nav>
+
+<main>
+  <!-- SEMANA -->
+  <section class="panel active" id="semana" role="tabpanel">
+    <div class="week-head">
+      <p>Toca el <b>verde</b> o la <b>fruta</b> del desayuno para cambiarlos.</p>
+      <button class="shuffle" id="shuffle" title="Rota todas las opciones">↻ Sorpréndeme</button>
+    </div>
+    <div id="days"></div>
+  </section>
+
+  <!-- RECETAS -->
+  <section class="panel" id="recetas" role="tabpanel">
+    <p class="lead">Las comidas caseras que <b>ya cocinaron y salieron bien</b>, listas para repetir. Cada una trae los ingredientes para tu lista de súper.</p>
+    <div class="filter" id="filter">
+      <button class="fbtn" data-lvl="all" aria-pressed="true">Todas</button>
+      <button class="fbtn" data-lvl="1" aria-pressed="false"><i class="lvl-dot lvl-1"></i>Sencillas</button>
+      <button class="fbtn" data-lvl="2" aria-pressed="false"><i class="lvl-dot lvl-2"></i>Medianas</button>
+      <button class="fbtn" data-lvl="3" aria-pressed="false"><i class="lvl-dot lvl-3"></i>Complejas</button>
+    </div>
+    <div id="recipes"></div>
+  </section>
+
+  <!-- SUPER -->
+  <section class="panel" id="super" role="tabpanel">
+    <p class="lead">La <b>despensa base</b> nunca debe faltar. La <b>rotación</b> es tu compra fresca semanal. Marca lo que ya tengas.</p>
+    <div id="shopping"></div>
+  </section>
+
+  <!-- PREP -->
+  <section class="panel" id="prep" role="tabpanel">
+    <p class="lead">Tu ventana de preparación es <b>lunes por la tarde y martes</b> (tu descanso). Cocinas las bases una vez y ruedan toda la semana.</p>
+    <div id="prepList"></div>
+  </section>
+
+  <!-- INSPIRACION -->
+  <section class="panel" id="inspiracion" role="tabpanel">
+    <p class="lead">Ideas para platicar con tu esposa. Todo parte de <b>lo que ya comen</b>: complementos que suman, platillos a un ingrediente de distancia, giros sin comprar nada, y licuados.</p>
+
+    <h2 class="insp-h">🌱 Ingredientes que valdría la pena considerar</h2>
+    <p class="insp-sub">Complementos que llenan huecos reales de tu registro.</p>
+    <div id="insp-comp"></div>
+
+    <h2 class="insp-h">🍽️ Platillos casi listos</h2>
+    <p class="insp-sub">Ya tienen ~70%. Solo falta comprar una cosa.</p>
+    <div id="insp-dish"></div>
+
+    <h2 class="insp-h">🔄 Giros con lo que ya hay</h2>
+    <p class="insp-sub">Cero compra. Misma despensa, otro platillo.</p>
+    <div id="insp-var"></div>
+
+    <h2 class="insp-h">🥤 Licuados y smoothies</h2>
+    <p class="insp-sub">El color te dice qué esperar. Todos con tus frutas y semillas.</p>
+    <div id="insp-smoothie"></div>
+  </section>
+</main>
+
+<footer>Basado en tu registro del 17 abr al 12 jul · hecho para ti y tu esposa 🌿</footer>
+
+<script>
+/* ---------------- DATA ---------------- */
+const VERDES = ["Nopal","Espinaca","Brócoli","Jitomate y cebolla"];
+const FRUTAS = ["Kiwi","Plátano","Mango","Piña","Papaya","Pitaya","Ciruela","Manzana"];
+
+const DAYS = [
+  { key:"Lun", name:"Lunes", mood:"fresco",
+    sched:"Trabajo <b>8:00–14:00</b> · Tarde libre",
+    badge:{c:"fresco",t:"🔥 Noche para cocinar"},
+    desTier:"Rápido · 7am", cenaMode:"Cocinar fresco",
+    cenas:[
+      {ico:"🐟",dish:"Salmón a la plancha con ajo",note:"Tu mejor noche libre = tu omega-3. Con espinaca salteada."},
+      {ico:"🥩",dish:"Bistec a la plancha + aguacate",note:"Sal, pimienta y aceite de oliva. Listo en 15 min."},
+      {ico:"🥗",dish:"Salmón + ensalada de espinaca y mango",note:"Una de sus mejores cenas del registro."},
+      {ico:"🐠",dish:"Tilapia empapelada con verduras",note:"Sin fritura, conserva nutrientes."},
+    ],
+    prep:"Saca del congelador la proteína de mañana." },
+
+  { key:"Mar", name:"Martes", mood:"descanso",
+    sched:"<b>Descanso</b> · Rosario 17:00–18:40",
+    badge:{c:"descanso",t:"🛒 Día de bases · cocina la esposa"},
+    desTier:"Relajado", cenaMode:"Ligera",
+    cenas:[
+      {ico:"🥣",dish:"Bowl o sobras del guisado",note:"Día suave. La cena no compite con el prep."},
+      {ico:"🥤",dish:"Licuado + fruta",note:"Ligero, aprovecha el descanso."},
+      {ico:"🍲",dish:"Lo que cocine tu esposa",note:"Su día de cocina."},
+    ],
+    prep:"Cuece frijoles + arroz rojo + una carne que rinda (molida o picadillo)." },
+
+  { key:"Mié", name:"Miércoles", mood:"calma",
+    sched:"Trabajo <b>14:00–19:30</b> · Llegas ~20:00",
+    badge:{c:"calma",t:"♻️ Recalentar"},
+    desTier:"Elaborado · 12:30", cenaMode:"Recalentar",
+    cenas:[
+      {ico:"♻️",dish:"Carne guisada del martes",note:"Con tortillas y aguacate. Cero cocción, llegas tarde."},
+      {ico:"🫓",dish:"Quesadillas de espinaca",note:"Rápidas y con hoja verde."},
+      {ico:"🥣",dish:"Sobras de base + verdura",note:"Lo que haya quedado del prep."},
+    ] },
+
+  { key:"Jue", name:"Jueves", mood:"calma",
+    sched:"Trabajo <b>8:00–14:00</b> · Hora santa 18:00 · Misa 19:00",
+    badge:{c:"calma",t:"⛪ Cena entre iglesia"},
+    desTier:"Rápido · 7am", cenaMode:"Fácil",
+    cenas:[
+      {ico:"🥫",dish:"Ceviche de sardina sobre salmas",note:"Se arma en 5 min, antes o después de misa."},
+      {ico:"🥣",dish:"Bowl + fruta",note:"Ligero entre iglesia."},
+      {ico:"🐟",dish:"Tostada de atún con pepino y aguacate",note:"Sin cocción, fresca."},
+    ] },
+
+  { key:"Vie", name:"Viernes", mood:"calma",
+    sched:"Trabajo <b>14:00–19:30</b> · Llegas ~20:00",
+    badge:{c:"calma",t:"♻️ Recalentar"},
+    desTier:"Elaborado · 12:30", cenaMode:"Recalentar / rápido",
+    cenas:[
+      {ico:"🐠",dish:"Tilapia rápida + verdura",note:"En 15 min si no quedó base."},
+      {ico:"♻️",dish:"Base del martes recalentada",note:"Si sobró guisado, aprovéchalo."},
+      {ico:"🫓",dish:"Quesadillas de espinaca",note:"Plan B rápido."},
+    ] },
+
+  { key:"Sáb", name:"Sábado", mood:"fresco",
+    sched:"Trabajo <b>8:00–14:00</b> · Misa 19:00",
+    badge:{c:"fresco",t:"🔥 Fresco rápido"},
+    desTier:"Rápido · 7am", cenaMode:"Cocinar fresco",
+    cenas:[
+      {ico:"🥩",dish:"Bistec a la plancha + aguacate",note:"Alrededor de misa, listo en 15 min."},
+      {ico:"🐟",dish:"Salmón a la plancha con ajo",note:"Rápido y con omega-3."},
+      {ico:"🍄",dish:"Champiñones salteados + pescado",note:"Guarnición ligera con lo que haya."},
+    ] },
+
+  { key:"Dom", name:"Domingo", mood:"calma",
+    sched:"Misa 10:00 · Trabajo <b>14:00–19:30</b> · Llegas ~20:00",
+    badge:{c:"calma",t:"♻️ Recalentar"},
+    desTier:"Elaborado · 11:30", cenaMode:"Recalentar / fácil",
+    cenas:[
+      {ico:"🫓",dish:"Sobras de base o quesadillas",note:"Cierre suave de la semana."},
+      {ico:"🥣",dish:"Bowl + fruta",note:"Lo más ligero al llegar."},
+      {ico:"🥗",dish:"Ensalada de atún con jícama",note:"Fresca y rápida."},
+    ] },
+];
+
+const RECIPES = [
+  {lvl:1,t:"Desayuno fórmula",time:"10 min",ings:["huevos","frijol negro casero","aguacate","1 verde","1 fruta","café","agave"],
+   steps:["Revuelve o estrella 2–2½ huevos con el verde del día (nopal, espinaca o brócoli).","Al lado: frijoles caseros + ¼ aguacate + la fruta.","Salmas de maíz azul o tortillas para acompañar."]},
+  {lvl:1,t:"Salmón a la plancha con ajo",time:"12 min",ings:["salmón","ajo","aceite de oliva","sal","pimienta","espinaca"],
+   steps:["Sazona el salmón con ajo, sal y pimienta.","Plancha 3–4 min por lado.","Saltea espinaca al lado con un toque de aceite."]},
+  {lvl:1,t:"Bistec a la plancha",time:"15 min",ings:["bistec o arrachera","sal","pimienta","aceite de oliva","aguacate"],
+   steps:["Sazona simple: sal, pimienta, chorrito de aceite de oliva.","Plancha al término que gusten.","Con aguacate y fruta al lado."]},
+  {lvl:1,t:"Ceviche de sardina",time:"8 min",ings:["sardina en jitomate","cebolla","cilantro","pepino","chile verde","limón","salmas de maíz azul"],
+   steps:["Mezcla la sardina con cebolla, cilantro, pepino y chile picados.","Exprime limón.","Sirve sobre salmas. Cero cocción, omega-3 y calcio."]},
+  {lvl:1,t:"Bowl nocturno",time:"5 min",ings:["yogurt griego Yoplait verde","moras","fresas","semillas de girasol","semillas de calabaza","cacahuate","nuez de la india","ciruela pasa"],
+   steps:["Yogurt de base.","Encima moras/fresas + mezcla de semillas y nueces.","Opcional: 3 ciruelas pasas o plátano."]},
+  {lvl:1,t:"Licuado de amaranto",time:"5 min",ings:["plátano o papaya","amaranto","cocoa Don Gustavo sin azúcar","leche"],
+   steps:["Licúa fruta + amaranto + cocoa + leche.","Amaranto = proteína completa. Sin azúcar añadida."]},
+
+  {lvl:2,t:"Tilapia empapelada",time:"30 min",ings:["tilapia","cebolla","papa","ajo","brócoli o espinaca","mantequilla","limón"],
+   steps:["Cama de cebolla, papa y ajo sobre papel aluminio.","Coloca la tilapia, brócoli/espinaca y un toque de mantequilla.","Cierra y hornea o al comal 20 min. Sin fritura."]},
+  {lvl:2,t:"Salmón + ensalada de espinaca y mango",time:"20 min",ings:["salmón","espinaca","mango","manzana","cacahuate","nuez de la india"],
+   steps:["Plancha el salmón simple.","Ensalada: espinaca + mango + manzana + frutos secos.","Una de sus mejores cenas del registro."]},
+  {lvl:2,t:"Carne molida con verduras",time:"25 min",ings:["carne molida de res","nopal","cebolla","brócoli","espinaca"],
+   steps:["Dora la carne con cebolla.","Agrega nopal, brócoli y espinaca.","Rinde: al día siguiente es tu desayuno."]},
+  {lvl:2,t:"Quesadillas de espinaca",time:"15 min",ings:["tortillas de maíz","queso Oaxaca","espinaca"],
+   steps:["Rellena tortillas con queso y espinaca.","Dora al comal.","Rápidas y con hoja verde."]},
+  {lvl:2,t:"Champiñones salteados",time:"15 min",ings:["champiñones","cebolla","espinaca","chile guajillo","ajo"],
+   steps:["Saltea champiñones con cebolla y ajo.","Agrega espinaca y chile guajillo.","Guarnición ideal para el pescado."]},
+
+  {lvl:3,t:"Caldo de pollo",time:"50 min",ings:["pechuga de pollo","papa","zanahoria","cebolla","ajo"],
+   steps:["Cuece la pechuga con papa, zanahoria y cebolla.","Sazona sencillo.","Batch: rinde varios días, reconforta."]},
+  {lvl:3,t:"Picadillo de res",time:"40 min",ings:["carne molida de res","zanahoria","papa","chícharo","elote","jitomate"],
+   steps:["Dora la carne, agrega las verduras en cubos.","Guisa en jitomate.","Recalienta muy bien toda la semana."]},
+  {lvl:3,t:"Enmoladas de pollo en salsa verde",time:"45 min",ings:["pollo deshebrado","tomate verde","cebolla","ajo","queso manchego","queso panela"],
+   steps:["Salsa verde con tomate, cebolla y ajo.","Rellena tortillas con pollo, baña en salsa.","Gratina con queso. Buen platillo de fin de semana."]},
+  {lvl:3,t:"Guisado de res en jitomate",time:"50 min",ings:["carne de res","jitomate","elote","calabaza","papa"],
+   steps:["Guisa la carne en jitomate.","Agrega elote, calabaza y papa.","Base sustanciosa que rinde y recalienta."]},
+];
+
+const SHOP = [
+  {title:"Despensa base",tag:"siempre",tagColor:"#0E5C54",items:[
+    ["Huevos","Walmart"],["Frijol negro (para cocer)","Chedraui"],["Sardina en lata",""],["Atún en lata",""],
+    ["Aceite de oliva extra virgen","Costco"],["Mantequilla",""],["Aguacate Hass","Super Aki"],
+    ["Chía",""],["Semillas de girasol","Costco"],["Semillas de calabaza","Costco"],["Cacahuate",""],["Nuez de la india","Costco"],["Nuez de Brasil","Costco"],["Ciruela pasa",""],
+    ["Yogurt griego Yoplait verde","Chedraui"],["Leche deslactosada",""],["Queso Oaxaca",""],["Queso panela",""],
+    ["Moras congeladas","Costco"],["Fresas congeladas","Costco"],
+    ["Salmas de maíz azul",""],["Tortillas de maíz",""],["Amaranto",""],["Cocoa Don Gustavo sin azúcar",""],["Café (con y sin cafeína)",""],["Agave",""],["Cebolla",""],["Ajo",""],
+  ]},
+  {title:"Proteína (rotación · congelador)",tag:"semanal",tagColor:"#E0972A",items:[
+    ["Salmón ⭐ (2–3 por semana)","Costco"],["Tilapia o pescado blanco","Super Aki"],["Bistec / arrachera / pulpa negra",""],["Carne molida de res",""],["Pollo (pechuga y piezas)",""],["Chorizo argentino (ocasional)",""],
+  ]},
+  {title:"Verdura (rotación fresca)",tag:"semanal",tagColor:"#5E9B86",items:[
+    ["Nopal",""],["Espinaca",""],["Brócoli",""],["Jitomate",""],["Zanahoria",""],["Champiñones",""],["Calabaza",""],["Papa",""],["Chícharo",""],["Jícama",""],["Pepino",""],["Cilantro",""],
+  ]},
+  {title:"Fruta (rotación)",tag:"semanal",tagColor:"#C65B72",items:[
+    ["Kiwi ⭐",""],["Plátano",""],["Mango",""],["Piña",""],["Papaya",""],["Pitaya",""],["Manzana",""],["Ciruela",""],["Guayaba (si hay)",""],
+  ]},
+];
+
+const PREP = [
+  {title:"Lunes por la tarde",items:["Saca proteína del congelador para el martes","Deja remojando el frijol si lo cueces desde crudo"]},
+  {title:"Martes (día de bases)",items:["Cocer frijoles negros caseros","Cocinar una carne que rinda: molida con verduras o picadillo","Arroz rojo","Opcional: caldo de pollo para 2–3 días","Porcionar y congelar salmón / tilapia / res","Lavar y picar el verde de la semana (nopal, espinaca, brócoli)","Dejar la fruta a la vista y lista"]},
+  {title:"Cada noche (ya automático)",items:["Bowl nocturno","Agua con chía reposada 15 min"]},
+];
+
+const COMPLEMENTOS = [
+  {n:"Linaza molida",w:"Omega-3 vegetal + fibra soluble. En tu registro era un pendiente; molida (no entera) sí se absorbe.",g:["bowl","licuado","agua"]},
+  {n:"Avena",w:"Fibra soluble (beta-glucano) que ayuda al colesterol. Remojada en el yogurt o de base en licuados.",g:["licuado","bowl"]},
+  {n:"Lentejas",w:"En junio bajó tu frecuencia de leguminosas. No necesitan remojo y cuecen en 20 min.",g:["guisado","ensalada"]},
+  {n:"Garbanzo",w:"La leguminosa versátil que ya conoces del comedor: ensaladas, hummus, guisos. Fibra y proteína vegetal.",g:["ensalada","hummus"]},
+  {n:"Camote",w:"Como la papa pero con más potasio, betacaroteno y fibra. Al horno o en cubos al comal.",g:["guarnición","desayuno"]},
+  {n:"Betabel",w:"Nitratos y folato. Rallado crudo en ensalada o rostizado. Buen color para los smoothies.",g:["ensalada","smoothie"]},
+  {n:"Edamame",w:"Proteína vegetal completa + fibra. Se hierve 4 min. Snack o topping salado.",g:["snack","bowl salado"]},
+  {n:"Kéfir",w:"Más cepas probióticas que el yogurt. Puedes alternarlo en el bowl nocturno.",g:["bowl","licuado"]},
+  {n:"Tahini",w:"Pasta de ajonjolí: calcio y grasa buena. Base de aderezos y del hummus casero.",g:["aderezo","hummus"]},
+  {n:"Alga nori",w:"Yodo natural y umami. Para pokes, wraps o desmenuzada sobre arroz.",g:["poke","arroz"]},
+  {n:"Cacao nibs",w:"Antioxidantes y un crunch amargo. Un puñito encima del bowl nocturno.",g:["bowl","smoothie"]},
+  {n:"Semilla de cáñamo",w:"Proteína completa + omega en una semilla. Sabor suave, se espolvorea en todo.",g:["bowl","ensalada"]},
+  {n:"Jengibre fresco",w:"Ya lo usas en el menjurje. En trozo para smoothies, tés o guisos costeños.",g:["smoothie","curry"]},
+];
+
+const CASILISTOS = [
+  {n:"Poke bowl de salmón",d:"Salmón sellado o crudo sobre arroz, con aguacate, pepino, ajonjolí y limón.",
+   have:["salmón","arroz","aguacate","pepino","ajonjolí","limón"],need:["salsa de soya","alga nori"]},
+  {n:"Curry ligero de tilapia",d:"Tilapia en salsa cremosa con cebolla, ajo, jengibre y cúrcuma. Muy costeño.",
+   have:["tilapia","cebolla","ajo","jengibre","cúrcuma"],need:["leche de coco"]},
+  {n:"Tinga de pollo",d:"Pollo deshebrado en jitomate y cebolla, sobre tus salmas o tostadas.",
+   have:["pollo","jitomate","cebolla","salmas"],need:["chile chipotle"]},
+  {n:"Lentejas guisadas con nopal",d:"Leguminosa + verdura en jitomate. Rinde y recalienta como tus otras bases.",
+   have:["nopal","jitomate","cebolla","zanahoria"],need:["lentejas"]},
+  {n:"Hummus casero",d:"Garbanzo licuado con ajo, limón y aceite de oliva. Untable para verduras crudas.",
+   have:["ajo","limón","aceite de oliva","ajonjolí"],need:["garbanzo en lata"]},
+  {n:"Shakshuka de huevo",d:"Huevos pochados en salsa de jitomate y cebolla especiada. Desayuno o cena.",
+   have:["huevos","jitomate","cebolla","ajo"],need:["pimiento morrón"]},
+  {n:"Ensalada tibia de lentejas y betabel",d:"Lentejas templadas con betabel rostizado, espinaca y limón. Fibra + folato.",
+   have:["espinaca","limón","aceite de oliva"],need:["lentejas","betabel"]},
+  {n:"Tostadas de atún estilo Sinaloa",d:"Atún con pepino, aguacate y cebolla morada sobre salmas. Fresco y rápido.",
+   have:["atún","pepino","aguacate","salmas","limón"],need:["chile serrano"]},
+  {n:"Tacos de pescado con repollo",d:"Tilapia a la plancha en tortilla con repollo rallado y crema de limón.",
+   have:["tilapia","tortillas","limón","cebolla"],need:["repollo"]},
+  {n:"Bowl de garbanzo especiado",d:"Garbanzo dorado con comino y paprika sobre arroz, con verduras. Vegetariano y saciante.",
+   have:["arroz","jitomate","pepino","aceite de oliva"],need:["garbanzo en lata","comino"]},
+  {n:"Sopa de lentejas con verduras",d:"Lentejas con zanahoria, papa y apio. Reconforta y rinde varios días.",
+   have:["zanahoria","papa","cebolla","ajo"],need:["lentejas"]},
+];
+
+const VARIANTES = [
+  {n:"Ensalada de nopal",d:"Nopal cocido con jitomate, cebolla, cilantro y limón. Fresca y prebiótica."},
+  {n:"Huevos rancheros verdes",d:"Tus huevos estrellados sobre salmas, pero con salsa verde en vez de roja."},
+  {n:"Nopal asado con queso",d:"Nopal a la plancha con queso Oaxaca, como taco. Guarnición o cena rápida."},
+  {n:"Ceviche de atún",d:"La técnica de tu ceviche de sardina, pero con atún. Cambia el perfil sin cambiar el método."},
+  {n:"Bowl nocturno chocolate",d:"Yogurt + cocoa Don Gustavo + plátano + nuez de la india. Postre sin culpa."},
+  {n:"Bistec al romero y ajo",d:"El de siempre, pero con romero (que ya usas) y ajo laminado dorado."},
+  {n:"Chilaquiles verdes horneados",d:"Salmas en salsa verde con huevo encima, al horno. Sin fritura."},
+  {n:"Aguacate relleno de atún",d:"Medio aguacate relleno de atún con cebolla y limón. Cena de 3 minutos."},
+  {n:"Tortitas de brócoli con huevo",d:"Brócoli picado ligado con huevo, doradas al comal. Vegetal en formato divertido."},
+  {n:"Ensalada de atún con jícama",d:"Atún con jícama, pepino y zanahoria en bastones. Crujiente y ligera."},
+  {n:"Nopales con huevo y guajillo",d:"Nopal salteado con huevo y chile guajillo. Desayuno distinto con lo de siempre."},
+  {n:"Agua fresca de guayaba",d:"Guayaba licuada con agua y limón, colada. Vitamina C altísima, sin azúcar."},
+];
+
+const SMOOTHIES = [
+  {n:"Verde amanecer",c:"#6BB39A",i:["espinaca","piña","pepino","jengibre","limón","chía"]},
+  {n:"Dorado",c:"#E0972A",i:["mango","cúrcuma","jengibre","leche","pizca de pimienta"],note:"Tu menjurje, en licuado."},
+  {n:"Rosa tropical",c:"#D66A7E",i:["pitaya","moras","plátano","yogurt verde"]},
+  {n:"Chocolate-plátano",c:"#7A5230",i:["cocoa sin azúcar","plátano","amaranto","leche"]},
+  {n:"Bomba de vitamina C",c:"#E8873B",i:["guayaba","zanahoria","limón","agua"]},
+  {n:"Cremoso de papaya",c:"#E7D49A",i:["papaya","yogurt","linaza","canela"]},
+  {n:"Morado antioxidante",c:"#7E5A8E",i:["moras","betabel","plátano","yogurt verde"]},
+  {n:"Tropical naranja",c:"#EDA13A",i:["mango","papaya","zanahoria","jengibre"]},
+  {n:"Verde cremoso",c:"#8FB56A",i:["aguacate","espinaca","piña","limón"],note:"El aguacate lo hace sedoso."},
+  {n:"Café-plátano",c:"#6B4A34",i:["café","plátano","cocoa","leche","canela"]},
+  {n:"Proteico de amaranto",c:"#C9A87A",i:["amaranto","plátano","cacahuate","leche"],note:"Post-entrenamiento cuando arranques pesas."},
+];
+
+/* ---------------- STATE + PERSISTENCIA ---------------- */
+const KEY='comal_v2';
+function loadState(){ try{const r=localStorage.getItem(KEY);return r?JSON.parse(r):null;}catch(e){return null;} }
+function saveState(){ try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){} }
+let state = loadState() || {};
+if(!Array.isArray(state.days)) state.days=[];
+DAYS.forEach((d,i)=>{
+  const def={v:i%VERDES.length, f1:i%FRUTAS.length, f2:(i+3)%FRUTAS.length, c:0, open:false};
+  state.days[i]=Object.assign(def, state.days[i]||{});
+  const s=state.days[i];
+  s.v=((s.v%VERDES.length)+VERDES.length)%VERDES.length;
+  s.f1=((s.f1%FRUTAS.length)+FRUTAS.length)%FRUTAS.length;
+  s.f2=((s.f2%FRUTAS.length)+FRUTAS.length)%FRUTAS.length;
+  s.c=((s.c%d.cenas.length)+d.cenas.length)%d.cenas.length;
+});
+if(!state.shop) state.shop={};
+if(!state.prep) state.prep={};
+saveState();
+
+function daySummary(i){
+  const s=state.days[i], c=DAYS[i].cenas[s.c];
+  return `🌅 ${VERDES[s.v]} · ${FRUTAS[s.f1]} · ${FRUTAS[s.f2]}   →   ${c.ico} ${c.dish}`;
+}
+
+/* ---------------- RENDER: RIBBON ---------------- */
+const ribbon = document.getElementById('ribbon');
+DAYS.forEach((d,i)=>{
+  const b=document.createElement('button');
+  b.className='rib';
+  b.innerHTML=`<span class="dot ${d.mood}"></span><span class="d">${d.key}</span>`;
+  b.onclick=()=>{ switchTab('semana'); setTimeout(()=>{ setDayOpen(i,true); document.getElementById('day'+i).scrollIntoView({behavior:'smooth',block:'start'}); },70); };
+  ribbon.appendChild(b);
+});
+
+/* ---------------- RENDER: DAYS ---------------- */
+const daysEl=document.getElementById('days');
+function setDayOpen(i, open){
+  const card=document.getElementById('day'+i), body=document.getElementById('body'+i), head=card.querySelector('.day-head');
+  card.classList.toggle('open', open);
+  head.setAttribute('aria-expanded', open);
+  body.style.maxHeight = open ? body.scrollHeight+'px' : '0px';
+  state.days[i].open=open; saveState();
+}
+function buildDays(){
+  daysEl.innerHTML='';
+  DAYS.forEach((d,i)=>{
+    const s=state.days[i], c=d.cenas[s.c];
+    const card=document.createElement('div');
+    card.className='day'+(s.open?' open':'');card.id='day'+i;
+    card.innerHTML=`
+      <button class="day-head" aria-expanded="${s.open}">
+        <div class="dh-row"><span class="day-name">${d.name}</span><span class="day-caret">▾</span></div>
+        <span class="badge ${d.badge.c}">${d.badge.t}</span>
+        <div class="day-summary" id="sum${i}">${daySummary(i)}</div>
+      </button>
+      <div class="day-body" id="body${i}"><div class="day-inner">
+        <div class="day-sched">🕒 ${d.sched}</div>
+        <div class="meal">
+          <div class="ico">🌅</div>
+          <div class="meal-body">
+            <div class="meal-label">Desayuno <span class="tier">${d.desTier}</span></div>
+            <div class="meal-dish">Huevo + frijol + aguacate</div>
+            <div class="rot">
+              <button class="chip" data-i="${i}" data-k="v"><span class="k">verde</span> <span id="v${i}">${VERDES[s.v]}</span> <span class="swap">↻</span></button>
+              <button class="chip" data-i="${i}" data-k="f1"><span class="k">fruta 1</span> <span id="f1_${i}">${FRUTAS[s.f1]}</span> <span class="swap">↻</span></button>
+              <button class="chip" data-i="${i}" data-k="f2"><span class="k">fruta 2</span> <span id="f2_${i}">${FRUTAS[s.f2]}</span> <span class="swap">↻</span></button>
+            </div>
+          </div>
+        </div>
+        <div class="meal">
+          <div class="ico" id="ci${i}">${c.ico}</div>
+          <div class="meal-body">
+            <div class="meal-label">Cena <span class="tier">${d.cenaMode}</span> <button class="cambiar" data-i="${i}" data-k="c">↻ cambiar</button></div>
+            <div class="meal-dish" id="cd${i}">${c.dish}</div>
+            <div class="meal-note" id="cn${i}">${c.note}</div>
+          </div>
+        </div>
+        ${d.prep?`<div class="nightly">🛒 <span><b>Prep:</b> ${d.prep}</span></div>`:''}
+        <div class="nightly">🌙 <span><b>Cierre:</b> bowl nocturno + agua con chía</span></div>
+      </div></div>`;
+    daysEl.appendChild(card);
+    card.querySelector('.day-head').onclick=()=>setDayOpen(i, !card.classList.contains('open'));
+  });
+}
+buildDays();
+
+// rotación (delegada)
+daysEl.addEventListener('click',e=>{
+  const el=e.target.closest('.chip')||e.target.closest('.cambiar');
+  if(!el) return;
+  const i=+el.dataset.i, k=el.dataset.k, s=state.days[i];
+  if(k==='v'){ s.v=(s.v+1)%VERDES.length; document.getElementById('v'+i).textContent=VERDES[s.v]; }
+  else if(k==='f1'){ s.f1=(s.f1+1)%FRUTAS.length; document.getElementById('f1_'+i).textContent=FRUTAS[s.f1]; }
+  else if(k==='f2'){ s.f2=(s.f2+1)%FRUTAS.length; document.getElementById('f2_'+i).textContent=FRUTAS[s.f2]; }
+  else if(k==='c'){ s.c=(s.c+1)%DAYS[i].cenas.length; const c=DAYS[i].cenas[s.c];
+    document.getElementById('ci'+i).textContent=c.ico;
+    document.getElementById('cd'+i).textContent=c.dish;
+    document.getElementById('cn'+i).textContent=c.note; }
+  document.getElementById('sum'+i).textContent=daySummary(i);
+  const card=document.getElementById('day'+i), body=document.getElementById('body'+i);
+  if(card.classList.contains('open')) body.style.maxHeight=body.scrollHeight+'px';
+  saveState();
+});
+
+// restaurar días abiertos
+window.addEventListener('load',()=>{
+  state.days.forEach((s,i)=>{ if(s.open){ const b=document.getElementById('body'+i); if(b) b.style.maxHeight=b.scrollHeight+'px'; } });
+});
+
+document.getElementById('shuffle').onclick=()=>{
+  DAYS.forEach((d,i)=>{
+    const s=state.days[i];
+    s.v=Math.floor(Math.random()*VERDES.length);
+    s.f1=Math.floor(Math.random()*FRUTAS.length);
+    s.f2=Math.floor(Math.random()*FRUTAS.length);
+    s.c=Math.floor(Math.random()*d.cenas.length);
+    const c=d.cenas[s.c];
+    document.getElementById('v'+i).textContent=VERDES[s.v];
+    document.getElementById('f1_'+i).textContent=FRUTAS[s.f1];
+    document.getElementById('f2_'+i).textContent=FRUTAS[s.f2];
+    document.getElementById('ci'+i).textContent=c.ico;
+    document.getElementById('cd'+i).textContent=c.dish;
+    document.getElementById('cn'+i).textContent=c.note;
+    document.getElementById('sum'+i).textContent=daySummary(i);
+    const card=document.getElementById('day'+i), body=document.getElementById('body'+i);
+    if(card.classList.contains('open')) body.style.maxHeight=body.scrollHeight+'px';
+  });
+  saveState();
+};
+
+/* ---------------- RENDER: RECIPES ---------------- */
+const recEl=document.getElementById('recipes');
+function renderRecipes(lvl){
+  recEl.innerHTML='';
+  RECIPES.filter(r=>lvl==='all'||r.lvl==+lvl).forEach(r=>{
+    const el=document.createElement('div');
+    el.className='recipe';
+    el.innerHTML=`
+      <button class="rec-head">
+        <span class="rec-lvl lvl-${r.lvl}"></span>
+        <span class="rec-title">${r.t}</span>
+        <span class="rec-time">${r.time}</span>
+        <span class="rec-caret">▾</span>
+      </button>
+      <div class="rec-body"><div class="rec-inner">
+        <h4>Ingredientes</h4>
+        <div class="ings">${r.ings.map(i=>`<span class="ing">${i}</span>`).join('')}</div>
+        <h4>Pasos</h4>
+        <ol class="steps">${r.steps.map(s=>`<li>${s}</li>`).join('')}</ol>
+      </div></div>`;
+    const head=el.querySelector('.rec-head'), body=el.querySelector('.rec-body');
+    head.onclick=()=>{
+      const open=el.classList.toggle('open');
+      body.style.maxHeight=open?body.scrollHeight+'px':0;
+    };
+    recEl.appendChild(el);
+  });
+}
+renderRecipes('all');
+document.getElementById('filter').querySelectorAll('.fbtn').forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll('#filter .fbtn').forEach(x=>x.setAttribute('aria-pressed','false'));
+    b.setAttribute('aria-pressed','true');
+    renderRecipes(b.dataset.lvl);
+  };
+});
+
+/* ---------------- RENDER: SHOPPING ---------------- */
+const shopEl=document.getElementById('shopping');
+SHOP.forEach((g,gi)=>{
+  const grp=document.createElement('div');grp.className='group';
+  grp.innerHTML=`<h3>${g.title} <span class="g-tag" style="background:${g.tagColor}">${g.tag}</span></h3>`;
+  g.items.forEach(([name,store],ii)=>{
+    const id='g'+gi+'-'+ii;
+    const row=document.createElement('div');row.className='check'+(state.shop[id]?' done':'');
+    row.innerHTML=`<span class="box"><svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"/></svg></span>
+      <span class="lbl">${name}</span>${store?`<span class="store">${store}</span>`:''}`;
+    row.onclick=()=>{ const on=row.classList.toggle('done'); state.shop[id]=on; saveState(); };
+    grp.appendChild(row);
+  });
+  shopEl.appendChild(grp);
+});
+
+/* ---------------- RENDER: PREP ---------------- */
+const prepEl=document.getElementById('prepList');
+PREP.forEach((g,gi)=>{
+  const grp=document.createElement('div');grp.className='group';
+  grp.innerHTML=`<h3>${g.title}</h3>`;
+  g.items.forEach((name,ii)=>{
+    const id='p'+gi+'-'+ii;
+    const row=document.createElement('div');row.className='check'+(state.prep[id]?' done':'');
+    row.innerHTML=`<span class="box"><svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"/></svg></span><span class="lbl">${name}</span>`;
+    row.onclick=()=>{ const on=row.classList.toggle('done'); state.prep[id]=on; saveState(); };
+    grp.appendChild(row);
+  });
+  prepEl.appendChild(grp);
+});
+
+/* ---------------- RENDER: INSPIRACION ---------------- */
+const compEl=document.getElementById('insp-comp');
+COMPLEMENTOS.forEach(c=>{
+  const el=document.createElement('div');el.className='icard';
+  el.innerHTML=`<div class="icard-t">${c.n}</div>
+    <div class="icard-why">${c.w}</div>
+    <div class="goes"><span class="k">va en</span>${c.g.map(g=>`<span class="ing">${g}</span>`).join('')}</div>`;
+  compEl.appendChild(el);
+});
+
+const dishEl=document.getElementById('insp-dish');
+CASILISTOS.forEach(d=>{
+  const el=document.createElement('div');el.className='recipe';
+  el.innerHTML=`
+    <button class="rec-head">
+      <span class="rec-title">${d.n}</span>
+      <span class="pill falta">falta: ${d.need[0]}</span>
+      <span class="rec-caret">▾</span>
+    </button>
+    <div class="rec-body"><div class="rec-inner">
+      <div class="icard-why" style="margin-top:13px">${d.d}</div>
+      <div class="hn"><span class="k">ya tienes</span>${d.have.map(x=>`<span class="ing">${x}</span>`).join('')}</div>
+      <div class="hn"><span class="k">falta</span>${d.need.map(x=>`<span class="ing need">${x}</span>`).join('')}</div>
+    </div></div>`;
+  const head=el.querySelector('.rec-head'), body=el.querySelector('.rec-body');
+  head.onclick=()=>{ const open=el.classList.toggle('open'); body.style.maxHeight=open?body.scrollHeight+'px':0; };
+  dishEl.appendChild(el);
+});
+
+const varEl=document.getElementById('insp-var');
+VARIANTES.forEach(v=>{
+  const el=document.createElement('div');el.className='recipe';
+  el.innerHTML=`
+    <button class="rec-head">
+      <span class="rec-title">${v.n}</span>
+      <span class="pill cero">cero compra</span>
+      <span class="rec-caret">▾</span>
+    </button>
+    <div class="rec-body"><div class="rec-inner">
+      <div class="icard-why" style="margin-top:13px">${v.d}</div>
+    </div></div>`;
+  const head=el.querySelector('.rec-head'), body=el.querySelector('.rec-body');
+  head.onclick=()=>{ const open=el.classList.toggle('open'); body.style.maxHeight=open?body.scrollHeight+'px':0; };
+  varEl.appendChild(el);
+});
+
+const smoEl=document.getElementById('insp-smoothie');
+SMOOTHIES.forEach(s=>{
+  const el=document.createElement('div');el.className='icard smoothie';
+  el.innerHTML=`<div class="swatch" style="background:${s.c}"></div>
+    <div style="flex:1;min-width:0">
+      <div class="icard-t">${s.n}</div>
+      ${s.note?`<div class="icard-why">${s.note}</div>`:''}
+      <div class="goes">${s.i.map(x=>`<span class="ing">${x}</span>`).join('')}</div>
+    </div>`;
+  smoEl.appendChild(el);
+});
+
+/* ---------------- TABS ---------------- */
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected',t.dataset.tab===name));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id===name));
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+document.getElementById('tabs').querySelectorAll('.tab').forEach(t=>t.onclick=()=>switchTab(t.dataset.tab));
+</script>
+</body>
+</html>

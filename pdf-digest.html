@@ -1,0 +1,548 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>PDF Digest</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+/* Hoja de contactos: la cuadrícula de páginas es la mesa de trabajo; las marcas rojas son el lápiz graso del laboratorio. */
+:root{
+  --bg:#EDF0F3; --surface:#FFFFFF; --ink:#16202A; --muted:#5A6573; --line:#D3D9E1;
+  --accent:#2747C9; --accent-ink:#FFFFFF; --sel:#E5EAFB; --mark:#C8372D; --mark-ink:#FFFFFF; --ok:#1F7A4D;
+  --display:'Barlow Condensed','Arial Narrow',sans-serif;
+  --body:'Barlow',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#10151B; --surface:#19212A; --ink:#E7ECF1; --muted:#98A4B1; --line:#2B3540;
+    --accent:#8299F3; --accent-ink:#0D1320; --sel:#1E2945; --mark:#F06F5D; --mark-ink:#1A0E0C; --ok:#5CC99A;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#10151B; --surface:#19212A; --ink:#E7ECF1; --muted:#98A4B1; --line:#2B3540;
+  --accent:#8299F3; --accent-ink:#0D1320; --sel:#1E2945; --mark:#F06F5D; --mark-ink:#1A0E0C; --ok:#5CC99A;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45;margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2.5px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header .wrap{padding-block:22px 10px;display:flex;flex-direction:column;gap:4px}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(30px,6vw,42px);line-height:1;margin:0;letter-spacing:.01em;text-wrap:balance}
+h1 b{color:var(--mark);font-weight:700}
+.lede{margin:0;color:var(--muted);max-width:62ch}
+main .wrap{padding-block:8px 150px;display:flex;flex-direction:column;gap:18px}
+
+/* Carga */
+.drop{border:2px dashed var(--line);border-radius:18px;background:var(--surface);padding:22px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;align-items:center}
+.drop.over{border-color:var(--accent);background:var(--sel)}
+.drop-copy{display:flex;flex-direction:column;gap:12px;min-width:0}
+.drop-copy h2{font-family:var(--display);font-size:26px;margin:0;line-height:1.05}
+.drop-copy ul{margin:0;padding-left:18px;color:var(--muted);display:flex;flex-direction:column;gap:4px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:999px;padding:11px 20px;min-height:46px;font-weight:600;cursor:pointer;background:var(--accent);color:var(--accent-ink)}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.file-btn{align-self:flex-start}
+.mock{background:#fff;border-radius:10px;padding:10px;display:grid;grid-template-columns:1fr 1fr;gap:8px;box-shadow:0 10px 28px -18px rgba(10,20,40,.55);max-width:100%}
+.mock span{aspect-ratio:16/9;border-radius:4px;background:linear-gradient(135deg,#C9D6EA,#E9EEF5);position:relative}
+.mock span:nth-child(2){background:linear-gradient(135deg,#D7E7DD,#EEF4F0)}
+.mock span:nth-child(3){background:linear-gradient(135deg,#EBDCCF,#F5EEE8)}
+.mock span:nth-child(4){background:linear-gradient(135deg,#D8D3EA,#EFEDF7)}
+.mock span::before{content:attr(data-p);position:absolute;top:0;left:0;background:#C8372D;color:#fff;font:700 11px/1 Arial,sans-serif;padding:4px 6px;border-radius:4px 0 4px 0}
+.mock-cap{font-size:13px;color:var(--muted);margin-top:8px;text-align:center}
+@media (max-width:640px){.drop{grid-template-columns:1fr}}
+
+/* Barra de archivo y controles */
+.filebar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px}
+.filebar .name{font-weight:600;min-width:0;overflow-wrap:anywhere}
+.filebar .meta{color:var(--muted);font-family:var(--mono);font-size:13px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px;display:flex;flex-wrap:wrap;gap:14px 22px;align-items:flex-end}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field label,.field .lbl{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.seg{display:inline-flex;background:var(--bg);border-radius:999px;padding:4px;gap:2px;flex-wrap:wrap}
+.seg button{border:0;background:transparent;border-radius:999px;padding:7px 12px;min-height:38px;cursor:pointer;font-weight:600;color:var(--muted);font-family:var(--mono);font-size:14px}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.chip{border:1.5px solid var(--line);background:transparent;border-radius:999px;padding:7px 14px;min-height:38px;cursor:pointer;font-weight:600;font-size:14px}
+.every{display:inline-flex;align-items:center;gap:6px}
+.every input{width:64px;border:1.5px solid var(--line);border-radius:10px;padding:7px 8px;background:var(--bg);font-family:var(--mono)}
+.check{display:inline-flex;align-items:center;gap:8px;min-height:38px;cursor:pointer}
+.check input{width:20px;height:20px;accent-color:var(--accent)}
+
+/* Cuadrícula de páginas */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.card.on{border-color:var(--accent);background:var(--sel)}
+.pick{position:relative;border:0;background:transparent;padding:0;cursor:pointer;text-align:left;display:block;width:100%}
+.thumb{display:block;aspect-ratio:var(--ar,16/9);max-width:100%;border-radius:6px;overflow:hidden;background:repeating-linear-gradient(135deg,var(--bg) 0 8px,var(--line) 8px 9px)}
+.thumb img{display:block;width:100%;height:100%;object-fit:contain;background:#fff}
+.num{position:absolute;top:0;left:0;background:var(--mark);color:var(--mark-ink);font-family:var(--mono);font-size:12px;padding:3px 7px;border-radius:6px 0 6px 0}
+.card:not(.on) .num{background:var(--muted);color:var(--surface)}
+.card:not(.on) .thumb img{opacity:.45;filter:grayscale(.8)}
+.tick{position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--surface);border:2px solid var(--line)}
+.tick svg{width:14px;height:14px;opacity:0}
+.card.on .tick{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.card.on .tick svg{opacity:1}
+.note-btn{border:0;background:transparent;color:var(--muted);font-size:13px;font-weight:600;text-align:left;padding:4px 2px;cursor:pointer;min-height:30px}
+.note-btn.has{color:var(--accent)}
+.note{width:100%;border:1.5px solid var(--line);border-radius:8px;padding:7px 8px;background:var(--surface);font-size:14px;resize:vertical;min-height:58px}
+
+/* Barra inferior */
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);box-shadow:0 -10px 24px -20px rgba(0,0,0,.4)}
+.dock .wrap{padding-block:12px;display:flex;align-items:center;gap:10px 16px;flex-wrap:wrap}
+.sum{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+.sum strong{font-family:var(--mono);font-size:15px;font-variant-numeric:tabular-nums}
+.sum small{color:var(--muted);font-size:13px}
+.bar{height:4px;border-radius:4px;background:var(--line);overflow:hidden;margin-top:4px}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .2s}
+
+/* Resultado */
+.result{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:14px}
+.result h2{font-family:var(--display);font-size:26px;margin:0;line-height:1}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.stat{border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.stat b{display:block;font-family:var(--mono);font-size:20px;font-variant-numeric:tabular-nums}
+.stat span{font-size:13px;color:var(--muted)}
+.sheets{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px}
+.sheets img{height:150px;width:auto;max-width:none;border-radius:6px;border:1px solid var(--line);background:#fff;flex-shrink:0}
+.fallback{width:100%;min-height:140px;border:1.5px solid var(--line);border-radius:10px;padding:10px;font-family:var(--mono);font-size:12px;background:var(--bg)}
+.hint{color:var(--muted);font-size:14px;margin:0}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:999px;font-weight:600;font-size:14px;z-index:30;max-width:calc(100% - 32px);text-align:center}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+
+<header><div class="wrap">
+  <h1>PDF <b>Digest</b></h1>
+  <p class="lede">Convierte una presentación pesada en un PDF ligero de hojas de contacto, más el texto de cada página, para mandárselo a Claude sin gastar de más.</p>
+</div></header>
+
+<main><div class="wrap">
+  <section class="drop" id="drop">
+    <div class="drop-copy">
+      <h2>Carga tu presentación</h2>
+      <ul>
+        <li>El archivo no sale de tu dispositivo. Todo se procesa aquí.</li>
+        <li>Marcas las páginas representativas y les agregas una nota de lo que dices en cada una.</li>
+        <li>Sale un PDF con varias páginas por hoja y un texto .md con lo escrito en cada página.</li>
+      </ul>
+      <label class="btn file-btn" for="file">Elegir PDF</label>
+      <input type="file" id="file" accept="application/pdf,.pdf" hidden>
+    </div>
+    <div>
+      <div class="mock" aria-hidden="true"><span data-p="p.3"></span><span data-p="p.7"></span><span data-p="p.12"></span><span data-p="p.18"></span></div>
+      <p class="mock-cap">Así se ve cada hoja: 4 páginas, cada una con su número.</p>
+    </div>
+  </section>
+
+  <section id="work" hidden>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="filebar">
+        <span class="name" id="fname"></span>
+        <span class="meta" id="fmeta"></span>
+        <label class="chip" for="file" style="display:inline-flex;align-items:center">Cambiar archivo</label>
+      </div>
+      <div class="panel">
+        <div class="field">
+          <span class="lbl">Páginas por hoja</span>
+          <div class="seg" id="perSeg">
+            <button type="button" data-v="1" aria-pressed="false">1</button>
+            <button type="button" data-v="2" aria-pressed="false">2</button>
+            <button type="button" data-v="4" aria-pressed="true">4</button>
+            <button type="button" data-v="6" aria-pressed="false">6</button>
+            <button type="button" data-v="9" aria-pressed="false">9</button>
+          </div>
+        </div>
+        <div class="field">
+          <span class="lbl">Calidad de imagen</span>
+          <div class="seg" id="qSeg">
+            <button type="button" data-v="0.55" aria-pressed="false">Ligera</button>
+            <button type="button" data-v="0.72" aria-pressed="true">Normal</button>
+            <button type="button" data-v="0.86" aria-pressed="false">Alta</button>
+          </div>
+        </div>
+        <div class="field">
+          <span class="lbl">Selección</span>
+          <div class="row">
+            <button type="button" class="chip" id="selAll">Todas</button>
+            <button type="button" class="chip" id="selNone">Ninguna</button>
+            <span class="every"><span>1 de cada</span><input type="number" id="everyN" min="2" max="50" value="3" inputmode="numeric" aria-label="Cada cuántas páginas"><button type="button" class="chip" id="selEvery">Aplicar</button></span>
+          </div>
+        </div>
+        <div class="field">
+          <span class="lbl">Texto</span>
+          <label class="check" for="withText"><input type="checkbox" id="withText" checked> Incluir el texto de cada página</label>
+        </div>
+      </div>
+      <p class="hint">Toca una página para quitarla o agregarla. Con 4 por hoja se alcanza a leer el texto grande de las diapositivas; con 9 solo se distingue la composición.</p>
+      <div class="grid" id="grid"></div>
+      <section class="result" id="result" hidden>
+        <h2>Digest listo</h2>
+        <div class="stats" id="stats"></div>
+        <div class="sheets" id="sheets"></div>
+        <div class="row">
+          <button type="button" class="btn" id="savePdf">Guardar PDF</button>
+          <button type="button" class="btn ghost" id="saveMd">Guardar texto .md</button>
+          <button type="button" class="btn ghost" id="copyMd">Copiar texto</button>
+        </div>
+        <p class="hint" id="saveHint">Manda el PDF a Claude. Si el texto es largo, manda también el .md, o pégalo en el chat.</p>
+        <textarea class="fallback" id="mdFallback" hidden readonly aria-label="Texto del digest"></textarea>
+      </section>
+    </div>
+  </section>
+</div></main>
+
+<div class="dock" id="dock" hidden><div class="wrap">
+  <div class="sum">
+    <strong id="sumMain">0 páginas</strong>
+    <small id="sumSub">Cargando…</small>
+    <div class="bar"><i id="barFill"></i></div>
+  </div>
+  <button type="button" class="btn" id="gen" disabled>Generar digest</button>
+</div></div>
+
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+(function(){
+'use strict';
+const $ = id => document.getElementById(id);
+const LONG = 1568;             // lado largo de cada hoja: lo que Claude usa sin reducir
+const THUMB_W = 220;
+const TICK = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.2 3L13 4.5"/></svg>';
+
+if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+const S = { pdf: null, name: '', n: 0, aspect: 9/16, sel: new Set(), notes: new Map(), texts: new Map(),
+            per: 4, q: 0.72, withText: true, loadId: 0, loaded: 0, busy: false, out: null };
+
+/* ---------- utilidades ---------- */
+let toastT;
+function toast(msg){ const t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 2600); }
+function fmtBytes(b){ return b < 1024*1024 ? Math.round(b/1024) + ' KB' : (b/1024/1024).toFixed(1) + ' MB'; }
+function fmtTok(t){ return t < 1000 ? String(Math.round(t)) : (t/1000).toFixed(t < 10000 ? 1 : 0) + 'k'; }
+function baseName(){ return (S.name.replace(/\.pdf$/i, '') || 'presentacion').replace(/[\\/:*?"<>|]+/g, '-'); }
+function ranges(list){
+  const out = []; let a = null, b = null;
+  for (const p of list){ if (a === null){ a = b = p; } else if (p === b + 1){ b = p; } else { out.push(a === b ? String(a) : a + '–' + b); a = b = p; } }
+  if (a !== null) out.push(a === b ? String(a) : a + '–' + b);
+  return out.join(', ');
+}
+function latin(s){
+  return s.replace(/[“”«»]/g, '"').replace(/[‘’]/g, "'").replace(/[–—]/g, '-').replace(/…/g, '...')
+          .replace(/[^\x09\x0A\x0D\x20-\x7E\xA0-\xFF]/g, '?');
+}
+function textFrom(tc){
+  let s = '';
+  for (const it of tc.items){ if (typeof it.str === 'string'){ s += it.str; s += it.hasEOL ? '\n' : ' '; } }
+  return s.replace(/[ \t]+/g, ' ').replace(/ *\n */g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+}
+const tick = () => new Promise(r => setTimeout(r, 0));
+
+/* ---------- geometría de las hojas ---------- */
+function gridFor(per){
+  const land = S.aspect <= 1;
+  const m = land ? {1:[1,1],2:[1,2],4:[2,2],6:[2,3],9:[3,3]} : {1:[1,1],2:[2,1],4:[2,2],6:[3,2],9:[3,3]};
+  return m[per];
+}
+function sheetDims(count){
+  const [cols] = gridFor(S.per);
+  const c = Math.min(cols, count);
+  const rows = Math.ceil(count / cols);
+  const g = 0.03;
+  const unitW = c + (c + 1) * g, unitH = rows * S.aspect + (rows + 1) * g;
+  const s = LONG / Math.max(unitW, unitH);
+  return { cols: c, rows, cw: s, ch: s * S.aspect, gap: s * g, w: Math.round(unitW * s), h: Math.round(unitH * s) };
+}
+function selected(){ return [...S.sel].sort((a, b) => a - b); }
+function estimate(){
+  const pages = selected();
+  let tokens = 0, sheets = 0;
+  for (let k = 0; k < pages.length; k += S.per){
+    const d = sheetDims(Math.min(S.per, pages.length - k));
+    tokens += Math.min(d.w * d.h, LONG * LONG) / 750; sheets++;
+  }
+  let chars = 0;
+  for (const p of pages){ chars += (S.notes.get(p) || '').length + 12; if (S.withText) chars += (S.texts.get(p) || '').length; }
+  tokens += chars / 4;
+  return { pages: pages.length, sheets, tokens };
+}
+
+/* ---------- interfaz ---------- */
+function updateSummary(){
+  const e = estimate();
+  $('sumMain').textContent = e.pages + ' de ' + S.n + ' páginas · ' + e.sheets + (e.sheets === 1 ? ' hoja' : ' hojas');
+  if (S.busy) return;
+  const reading = S.loaded < S.n ? 'Leyendo ' + S.loaded + ' de ' + S.n + ' · ' : '';
+  $('sumSub').textContent = reading + '≈ ' + fmtTok(e.tokens) + ' tokens al mandarlo';
+  $('gen').disabled = e.pages === 0;
+}
+function setBar(frac){ $('barFill').style.width = Math.round(frac * 100) + '%'; }
+function paintCard(p){
+  const card = document.querySelector('.card[data-p="' + p + '"]'); if (!card) return;
+  const on = S.sel.has(p);
+  card.classList.toggle('on', on);
+  card.querySelector('.pick').setAttribute('aria-pressed', on ? 'true' : 'false');
+}
+function paintAll(){ for (let p = 1; p <= S.n; p++) paintCard(p); updateSummary(); invalidate(); }
+function invalidate(){ if (S.out){ S.out = null; $('result').hidden = true; } }
+
+function buildGrid(){
+  const grid = $('grid'); grid.innerHTML = '';
+  grid.style.setProperty('--ar', '1 / ' + S.aspect.toFixed(4));
+  const frag = document.createDocumentFragment();
+  for (let p = 1; p <= S.n; p++){
+    const card = document.createElement('div'); card.className = 'card on'; card.dataset.p = p;
+    card.innerHTML =
+      '<button type="button" class="pick" aria-pressed="true" aria-label="Página ' + p + '">' +
+        '<span class="thumb"><img alt="" decoding="async"></span>' +
+        '<span class="num">p.' + p + '</span><span class="tick">' + TICK + '</span></button>' +
+      '<button type="button" class="note-btn" aria-expanded="false">+ Nota</button>' +
+      '<textarea class="note" id="note-' + p + '" rows="2" placeholder="Qué digo en esta página…" hidden></textarea>';
+    frag.appendChild(card);
+  }
+  grid.appendChild(frag);
+}
+
+$('grid').addEventListener('click', e => {
+  const card = e.target.closest('.card'); if (!card) return;
+  const p = +card.dataset.p;
+  if (e.target.closest('.pick')){
+    S.sel.has(p) ? S.sel.delete(p) : S.sel.add(p);
+    paintCard(p); updateSummary(); invalidate();
+  } else if (e.target.closest('.note-btn')){
+    const ta = card.querySelector('.note'), btn = card.querySelector('.note-btn');
+    ta.hidden = !ta.hidden; btn.setAttribute('aria-expanded', String(!ta.hidden));
+    if (!ta.hidden) ta.focus();
+  }
+});
+$('grid').addEventListener('input', e => {
+  if (!e.target.classList.contains('note')) return;
+  const card = e.target.closest('.card'), p = +card.dataset.p, v = e.target.value;
+  if (v.trim()) S.notes.set(p, v); else S.notes.delete(p);
+  const btn = card.querySelector('.note-btn');
+  btn.classList.toggle('has', !!v.trim()); btn.textContent = v.trim() ? 'Nota ✓' : '+ Nota';
+  if (v.trim() && !S.sel.has(p)){ S.sel.add(p); paintCard(p); }
+  updateSummary(); invalidate();
+});
+
+function segInit(id, key, cast){
+  $(id).addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    $(id).querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b ? 'true' : 'false'));
+    S[key] = cast(b.dataset.v); updateSummary(); invalidate();
+  });
+}
+segInit('perSeg', 'per', v => parseInt(v, 10));
+segInit('qSeg', 'q', v => parseFloat(v));
+$('withText').addEventListener('change', e => { S.withText = e.target.checked; updateSummary(); invalidate(); });
+$('selAll').addEventListener('click', () => { for (let p = 1; p <= S.n; p++) S.sel.add(p); paintAll(); });
+$('selNone').addEventListener('click', () => { S.sel.clear(); paintAll(); });
+$('selEvery').addEventListener('click', () => {
+  const n = Math.max(2, Math.min(50, parseInt($('everyN').value, 10) || 3));
+  S.sel.clear(); for (let p = 1; p <= S.n; p += n) S.sel.add(p);
+  for (const p of S.notes.keys()) S.sel.add(p);
+  paintAll();
+});
+
+/* ---------- carga del PDF ---------- */
+async function loadFile(file){
+  if (!file) return;
+  if (!window.pdfjsLib){ toast('No cargó el lector de PDF. Revisa tu conexión y recarga.'); return; }
+  const id = ++S.loadId;
+  S.name = file.name; S.sel.clear(); S.notes.clear(); S.texts.clear(); S.loaded = 0; S.out = null;
+  $('result').hidden = true;
+  try {
+    const buf = await file.arrayBuffer();
+    if (S.pdf){ try { S.pdf.destroy(); } catch (_) {} }
+    const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(buf), disableFontFace: true, isEvalSupported: false }).promise;
+    if (id !== S.loadId) return;
+    S.pdf = pdf; S.n = pdf.numPages;
+    const first = await pdf.getPage(1); const vp = first.getViewport({ scale: 1 });
+    S.aspect = vp.height / vp.width;
+    for (let p = 1; p <= S.n; p++) S.sel.add(p);
+    $('fname').textContent = file.name;
+    $('fmeta').textContent = S.n + ' páginas · ' + fmtBytes(file.size);
+    $('drop').hidden = true; $('work').hidden = false; $('dock').hidden = false;
+    buildGrid(); paintAll();
+    readPages(id);
+  } catch (err){
+    toast('No pude abrir ese PDF. ¿Está protegido con contraseña o dañado?');
+  }
+}
+async function readPages(id){
+  for (let p = 1; p <= S.n; p++){
+    if (id !== S.loadId) return;
+    try {
+      const page = await S.pdf.getPage(p);
+      const vp1 = page.getViewport({ scale: 1 });
+      const scale = (THUMB_W * Math.min(2, window.devicePixelRatio || 1)) / vp1.width;
+      const vp = page.getViewport({ scale });
+      const cv = document.createElement('canvas'); cv.width = Math.ceil(vp.width); cv.height = Math.ceil(vp.height);
+      const ctx = cv.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, cv.width, cv.height);
+      await page.render({ canvasContext: ctx, viewport: vp }).promise;
+      const img = document.querySelector('.card[data-p="' + p + '"] img');
+      if (img) img.src = cv.toDataURL('image/jpeg', 0.7);
+      cv.width = cv.height = 0;
+      try { S.texts.set(p, textFrom(await page.getTextContent())); } catch (_) { S.texts.set(p, ''); }
+      page.cleanup();
+    } catch (_) { S.texts.set(p, ''); }
+    S.loaded = p;
+    if (!S.busy) setBar(p / S.n);
+    updateSummary();
+    await tick();
+  }
+  if (!S.busy) setBar(0);
+}
+
+const fileIn = $('file');
+fileIn.addEventListener('change', () => { loadFile(fileIn.files[0]); fileIn.value = ''; });
+const drop = $('drop');
+['dragenter', 'dragover'].forEach(ev => document.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); }));
+['dragleave', 'drop'].forEach(ev => document.addEventListener(ev, e => { e.preventDefault(); if (ev === 'drop' || e.target === document.documentElement) drop.classList.remove('over'); }));
+document.addEventListener('drop', e => { const f = e.dataTransfer && e.dataTransfer.files[0]; if (f) loadFile(f); });
+
+/* ---------- generación ---------- */
+async function renderInto(ctx, p, x, y, w, h){
+  const page = await S.pdf.getPage(p);
+  const vp1 = page.getViewport({ scale: 1 });
+  const scale = Math.min(w / vp1.width, h / vp1.height);
+  const vp = page.getViewport({ scale });
+  const pc = document.createElement('canvas'); pc.width = Math.ceil(vp.width); pc.height = Math.ceil(vp.height);
+  const pctx = pc.getContext('2d'); pctx.fillStyle = '#fff'; pctx.fillRect(0, 0, pc.width, pc.height);
+  await page.render({ canvasContext: pctx, viewport: vp }).promise;
+  const ox = Math.round(x + (w - pc.width) / 2), oy = Math.round(y + (h - pc.height) / 2);
+  ctx.drawImage(pc, ox, oy);
+  ctx.strokeStyle = '#C3CAD3'; ctx.lineWidth = 1; ctx.strokeRect(ox + .5, oy + .5, pc.width - 1, pc.height - 1);
+  const fs = Math.max(16, Math.round(w * 0.042)), pad = Math.round(fs * 0.35), label = 'p.' + p;
+  ctx.font = '700 ' + fs + 'px Arial, Helvetica, sans-serif'; ctx.textBaseline = 'top';
+  const tw = ctx.measureText(label).width;
+  ctx.fillStyle = '#C8372D'; ctx.fillRect(ox, oy, tw + pad * 2, fs + pad * 1.4);
+  ctx.fillStyle = '#FFFFFF'; ctx.fillText(label, ox + pad, oy + pad * 0.7);
+  page.cleanup(); pc.width = pc.height = 0;
+}
+
+function buildMd(pages, sheets){
+  const L = [];
+  L.push('# Digest: ' + S.name, '');
+  L.push('- Páginas del archivo: ' + S.n);
+  L.push('- Páginas incluidas (' + pages.length + '): ' + ranges(pages));
+  L.push('- Hojas en el PDF: ' + sheets + ' (' + S.per + ' por hoja)');
+  L.push('');
+  for (const p of pages){
+    L.push('## p.' + p);
+    const note = (S.notes.get(p) || '').trim();
+    if (note) L.push('**Nota:** ' + note.replace(/\n+/g, ' '));
+    if (S.withText){ const t = (S.texts.get(p) || '').trim(); L.push(t ? t : '_(sin texto extraíble; ver imagen)_'); }
+    L.push('');
+  }
+  return L.join('\n');
+}
+
+async function generate(){
+  const pages = selected(); if (!pages.length || S.busy) return;
+  if (!window.jspdf){ toast('No cargó el generador de PDF. Revisa tu conexión y recarga.'); return; }
+  S.busy = true; $('gen').disabled = true; invalidate();
+  const { jsPDF } = window.jspdf;
+  const meas = new jsPDF({ unit: 'px', hotfixes: ['px_scaling'] });
+  meas.setFont('helvetica', 'normal'); meas.setFontSize(18);
+  const LH = meas.getLineHeight() / meas.internal.scaleFactor;
+  let doc = null; const previews = []; let done = 0;
+  try {
+    for (let k = 0; k < pages.length; k += S.per){
+      const chunk = pages.slice(k, k + S.per);
+      const d = sheetDims(chunk.length);
+      const cv = document.createElement('canvas'); cv.width = d.w; cv.height = d.h;
+      const ctx = cv.getContext('2d'); ctx.fillStyle = '#FFFFFF'; ctx.fillRect(0, 0, d.w, d.h);
+      for (let j = 0; j < chunk.length; j++){
+        const col = j % d.cols, row = Math.floor(j / d.cols);
+        await renderInto(ctx, chunk[j], d.gap + col * (d.cw + d.gap), d.gap + row * (d.ch + d.gap), d.cw, d.ch);
+        done++; setBar(done / pages.length);
+        $('sumSub').textContent = 'Armando hoja ' + (Math.floor(k / S.per) + 1) + ' · página ' + done + ' de ' + pages.length;
+        await tick();
+      }
+      const blob = await new Promise(r => cv.toBlob(r, 'image/jpeg', S.q));
+      cv.width = cv.height = 0;
+      const bytes = new Uint8Array(await blob.arrayBuffer());
+      const noteText = chunk.filter(p => (S.notes.get(p) || '').trim()).map(p => 'p.' + p + ': ' + S.notes.get(p).trim().replace(/\n+/g, ' ')).join('\n');
+      const lines = noteText ? meas.splitTextToSize(latin(noteText), d.w - 48) : [];
+      const capH = lines.length ? Math.ceil(lines.length * LH + 36) : 0;
+      const W = d.w, H = d.h + capH, orient = W >= H ? 'l' : 'p';
+      if (!doc) doc = new jsPDF({ unit: 'px', format: [W, H], orientation: orient, compress: true, hotfixes: ['px_scaling'] });
+      else doc.addPage([W, H], orient);
+      doc.addImage(bytes, 'JPEG', 0, 0, d.w, d.h, undefined, 'NONE');
+      if (lines.length){
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(18); doc.setTextColor(28, 34, 42);
+        doc.text(lines, 24, d.h + 18, { baseline: 'top' });
+      }
+      previews.push(URL.createObjectURL(blob));
+    }
+    const pdfBlob = doc.output('blob');
+    const md = buildMd(pages, previews.length);
+    S.out = { pdfBlob, md, previews, pages };
+    showResult();
+  } catch (err){
+    toast('Algo falló al armar el PDF. Prueba con menos páginas o calidad Ligera.');
+  } finally {
+    S.busy = false; setBar(S.loaded < S.n ? S.loaded / S.n : 0); updateSummary();
+  }
+}
+
+function showResult(){
+  const o = S.out, e = estimate();
+  $('stats').innerHTML =
+    stat(o.pages.length, 'páginas incluidas') + stat(o.previews.length, o.previews.length === 1 ? 'hoja' : 'hojas') +
+    stat(fmtBytes(o.pdfBlob.size), 'peso del PDF') + stat(fmtBytes(new Blob([o.md]).size), 'peso del texto') +
+    stat('≈ ' + fmtTok(e.tokens), 'tokens al mandarlo');
+  const sh = $('sheets'); sh.innerHTML = '';
+  o.previews.forEach((u, i) => { const im = document.createElement('img'); im.src = u; im.alt = 'Hoja ' + (i + 1); sh.appendChild(im); });
+  $('mdFallback').hidden = true;
+  $('result').hidden = false;
+  $('result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+function stat(v, l){ return '<div class="stat"><b>' + v + '</b><span>' + l + '</span></div>'; }
+
+/* ---------- guardar ---------- */
+let dlPromise = null;
+function downloadsNs(){
+  if (!dlPromise) dlPromise = (window.claude && typeof window.claude.use === 'function') ? window.claude.use('downloads').catch(() => null) : Promise.resolve(null);
+  return dlPromise;
+}
+async function saveFile(filename, data){
+  const inViewer = !!(window.claude && typeof window.claude.use === 'function');
+  if (!inViewer){
+    const url = URL.createObjectURL(data instanceof Blob ? data : new Blob([data], { type: 'text/markdown' }));
+    const a = document.createElement('a'); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 5000); toast('Descarga iniciada'); return;
+  }
+  const dl = await downloadsNs();
+  if (!dl){ toast('Guardar no está disponible en esta vista. Usa Copiar texto o abre la página en la app de Claude.'); return; }
+  try { await dl.save({ filename, data }); toast('Guardado'); }
+  catch (e){
+    const c = e && e.code;
+    if (c === 'declined') toast('No se guardó');
+    else if (c === 'rate_limited') toast('Ya hay un guardado abierto. Espera un momento.');
+    else if (c === 'too_large') toast('Es demasiado grande. Prueba calidad Ligera o más páginas por hoja.');
+    else toast('No se pudo guardar en esta vista.');
+  }
+}
+$('savePdf').addEventListener('click', () => { if (S.out) saveFile(baseName() + '-digest.pdf', S.out.pdfBlob); });
+$('saveMd').addEventListener('click', () => { if (S.out) saveFile(baseName() + '-texto.md', S.out.md); });
+$('copyMd').addEventListener('click', () => {
+  if (!S.out) return;
+  const ta = $('mdFallback');
+  const fallback = () => { ta.value = S.out.md; ta.hidden = false; ta.focus(); ta.select(); toast('Selecciona y copia el texto de abajo'); };
+  try {
+    navigator.clipboard.writeText(S.out.md).then(() => toast('Texto copiado'), fallback);
+  } catch (_) { fallback(); }
+});
+$('gen').addEventListener('click', generate);
+})();
+</script>
+
+</body></html>

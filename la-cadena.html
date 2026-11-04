@@ -1,0 +1,1388 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La Cadena</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d0d;
+    --surface: #141414;
+    --surface2: #1a1a1a;
+    --border: #2a2a2a;
+    --border-light: #3a3a3a;
+    --gold: #c9a84c;
+    --gold-dim: #8a6e2f;
+    --gold-bright: #e8c46a;
+    --amber: #d4824a;
+    --text: #e8e0d0;
+    --text-dim: #8a8070;
+    --text-muted: #555040;
+    --chain-done: #c9a84c;
+    --chain-miss: #2a2a2a;
+    --chain-empty: #1a1a1a;
+    --spiritual: #7c6fa0;
+    --physical: #4a8c6f;
+    --digital: #4a7a8c;
+    --radius: 4px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Crimson Pro', Georgia, serif;
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* ── TEXTURE OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(ellipse at 20% 10%, rgba(201,168,76,0.04) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 90%, rgba(74,140,111,0.03) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .app { position: relative; z-index: 1; max-width: 480px; margin: 0 auto; padding: 0 0 80px; }
+
+  /* ── HEADER ── */
+  header {
+    padding: 32px 20px 20px;
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+    position: relative;
+  }
+
+  .header-ornament {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 6px;
+    color: var(--gold-dim);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    opacity: 0.7;
+  }
+
+  header h1 {
+    font-family: 'Cinzel', serif;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: var(--gold);
+    text-shadow: 0 0 30px rgba(201,168,76,0.2);
+  }
+
+  header h1 span { color: var(--text-dim); }
+
+  .header-sub {
+    font-family: 'Crimson Pro', serif;
+    font-style: italic;
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 6px;
+    letter-spacing: 0.5px;
+  }
+
+  .date-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 16px;
+  }
+
+  .date-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .date-btn:hover { border-color: var(--gold-dim); color: var(--gold); }
+
+  #current-date-display {
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    letter-spacing: 1px;
+    color: var(--text);
+    min-width: 160px;
+    text-align: center;
+  }
+
+  /* ── STREAK BANNER ── */
+  .streak-banner {
+    margin: 20px 16px;
+    background: linear-gradient(135deg, #1a1508, #0f1208);
+    border: 1px solid var(--gold-dim);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .streak-banner::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(201,168,76,0.05) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .streak-icon {
+    font-size: 28px;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  .streak-info { flex: 1; }
+
+  .streak-number {
+    font-family: 'Cinzel', serif;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--gold);
+    line-height: 1;
+    text-shadow: 0 0 20px rgba(201,168,76,0.4);
+  }
+
+  .streak-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-style: italic;
+    letter-spacing: 0.5px;
+  }
+
+  .streak-status {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-align: right;
+    line-height: 1.4;
+  }
+
+  /* ── CHAIN VISUALIZATION ── */
+  .chain-section {
+    margin: 0 16px 8px;
+  }
+
+  .chain-label {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 4px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .chain-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+  }
+
+  .chain-day {
+    aspect-ratio: 1;
+    border-radius: 3px;
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+
+  .chain-day:hover { transform: scale(1.15); box-shadow: 0 0 8px rgba(201,168,76,0.25); }
+  .chain-day.selected { outline: 2px solid var(--gold-bright); outline-offset: 2px; }
+
+  .chain-day.done {
+    background: var(--gold);
+    box-shadow: 0 0 6px rgba(201,168,76,0.3);
+  }
+
+  .chain-day.partial {
+    background: linear-gradient(135deg, var(--gold-dim), var(--border));
+  }
+
+  .chain-day.missed {
+    background: var(--border);
+    border: 1px solid #222;
+  }
+
+  .chain-day.empty {
+    background: var(--chain-empty);
+    border: 1px dashed #222;
+  }
+
+  .chain-day.today {
+    outline: 2px solid var(--gold);
+    outline-offset: 1px;
+  }
+
+  .chain-day-label {
+    font-family: 'Cinzel', serif;
+    font-size: 7px;
+    color: var(--text-muted);
+    text-align: center;
+    margin-bottom: 3px;
+    letter-spacing: 1px;
+  }
+
+  /* ── TABS ── */
+  .tabs {
+    display: flex;
+    margin: 20px 16px 0;
+    gap: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .tab-btn {
+    flex: 1;
+    background: none;
+    border: none;
+    padding: 10px 6px;
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    border-right: 1px solid var(--border);
+  }
+
+  .tab-btn:last-child { border-right: none; }
+  .tab-btn.active { background: var(--surface2); color: var(--gold); }
+  .tab-btn:hover:not(.active) { color: var(--text-dim); background: rgba(255,255,255,0.02); }
+
+  /* ── DAILY VIEW ── */
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 20px 20px 12px;
+  }
+
+  .section-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .section-title {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  .section-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── HABIT ITEMS ── */
+  .habit-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 20px;
+    border-bottom: 1px solid rgba(42,42,42,0.5);
+    transition: background 0.15s;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .habit-item:hover { background: rgba(255,255,255,0.015); }
+  .habit-item.completed { background: rgba(201,168,76,0.03); }
+
+  .habit-check {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s;
+    font-size: 11px;
+  }
+
+  .habit-item.completed .habit-check {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: #0d0d0d;
+    box-shadow: 0 0 8px rgba(201,168,76,0.3);
+  }
+
+  .habit-name {
+    flex: 1;
+    font-size: 16px;
+    color: var(--text);
+    transition: color 0.2s;
+    line-height: 1.3;
+  }
+
+  .habit-item.completed .habit-name {
+    color: var(--text-dim);
+  }
+
+  .habit-emoji {
+    font-size: 16px;
+    flex-shrink: 0;
+    opacity: 0.7;
+  }
+
+  /* ── NUMERIC INPUTS ── */
+  .habit-numeric {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 20px 10px 56px;
+    border-bottom: 1px solid rgba(42,42,42,0.5);
+    cursor: default;
+  }
+
+  .numeric-label {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-style: italic;
+    flex: 1;
+    line-height: 1.3;
+  }
+
+  .numeric-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 4px 8px;
+    min-width: 90px;
+  }
+
+  .numeric-input {
+    background: none;
+    border: none;
+    color: var(--gold);
+    font-family: 'Cinzel', serif;
+    font-size: 15px;
+    width: 48px;
+    text-align: right;
+    outline: none;
+  }
+
+  .numeric-unit {
+    font-size: 10px;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  /* ── COMPLETION SUMMARY ── */
+  .day-summary {
+    margin: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .summary-text {
+    font-size: 13px;
+    color: var(--text-dim);
+    font-style: italic;
+  }
+
+  .summary-pct {
+    font-family: 'Cinzel', serif;
+    font-size: 20px;
+    color: var(--gold);
+  }
+
+  .progress-bar-wrap {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-top: 10px;
+    overflow: hidden;
+  }
+
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold-dim), var(--gold));
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  /* ── SAVE BUTTON ── */
+  .save-btn {
+    display: block;
+    width: calc(100% - 32px);
+    margin: 16px;
+    padding: 14px;
+    background: linear-gradient(135deg, #1e1a08, #141208);
+    border: 1px solid var(--gold-dim);
+    border-radius: var(--radius);
+    color: var(--gold);
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    letter-spacing: 3px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+
+  .save-btn:hover {
+    background: linear-gradient(135deg, #2a2410, #1a1a0a);
+    border-color: var(--gold);
+    box-shadow: 0 0 16px rgba(201,168,76,0.15);
+  }
+
+  .save-btn:active { transform: scale(0.98); }
+
+  /* ── WEEKLY VIEW ── */
+  .week-grid {
+    padding: 8px 16px;
+  }
+
+  .week-day-row {
+    margin-bottom: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .week-day-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .week-day-name {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+  }
+
+  .week-day-pct {
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    color: var(--gold);
+  }
+
+  .week-day-pct.zero { color: var(--text-muted); }
+
+  .week-habits-row {
+    display: flex;
+    gap: 3px;
+    padding: 10px 14px;
+    flex-wrap: wrap;
+  }
+
+  .week-habit-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 1px solid var(--border-light);
+    transition: all 0.15s;
+    position: relative;
+  }
+
+  .week-habit-dot.done {
+    background: var(--gold);
+    border-color: var(--gold);
+    box-shadow: 0 0 4px rgba(201,168,76,0.4);
+  }
+
+  .week-habit-dot[title] { cursor: help; }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--surface2);
+    border: 1px solid var(--gold-dim);
+    color: var(--gold);
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    padding: 10px 20px;
+    border-radius: var(--radius);
+    transition: transform 0.3s ease;
+    z-index: 100;
+    white-space: nowrap;
+  }
+
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  .autosave-note {
+    text-align: center;
+    font-family: 'Crimson Pro', serif;
+    font-style: italic;
+    font-size: 12px;
+    color: var(--text-muted);
+    padding: 14px 20px 4px;
+    letter-spacing: 0.3px;
+    opacity: 0.6;
+  }
+
+
+  @media (max-width: 380px) {
+    header h1 { font-size: 22px; }
+    .streak-number { font-size: 26px; }
+  }
+
+  /* Separator styles per category */
+  .dot-spiritual { background: var(--spiritual); }
+  .dot-physical { background: var(--physical); }
+  .dot-digital { background: var(--digital); }
+
+  .week-habit-dot.spiritual.done { background: var(--spiritual); border-color: var(--spiritual); box-shadow: 0 0 4px rgba(124,111,160,0.5); }
+  .week-habit-dot.physical.done { background: var(--physical); border-color: var(--physical); box-shadow: 0 0 4px rgba(74,140,111,0.5); }
+  .week-habit-dot.digital.done { background: var(--digital); border-color: var(--digital); box-shadow: 0 0 4px rgba(74,122,140,0.5); }
+
+  /* Chain connector visual */
+  .chain-connector {
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    margin-bottom: 4px;
+    overflow: hidden;
+  }
+
+  .chain-link {
+    flex: 1;
+    height: 2px;
+    background: var(--border);
+    position: relative;
+    overflow: visible;
+  }
+
+  .chain-link.active {
+    background: linear-gradient(90deg, var(--gold-dim), var(--gold));
+    box-shadow: 0 0 4px rgba(201,168,76,0.3);
+  }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-muted);
+    font-style: italic;
+    font-size: 14px;
+  }
+
+  .empty-state .icon { font-size: 32px; margin-bottom: 12px; opacity: 0.5; }
+
+  /* ── DATA PORTABILITY ── */
+  .data-bar {
+    display: flex;
+    gap: 8px;
+    margin: 0 16px 8px;
+  }
+
+  .data-btn {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text-dim);
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 2px;
+    padding: 9px 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+
+  .data-btn:hover { border-color: var(--gold-dim); color: var(--gold); background: var(--surface2); }
+  .data-btn.import-btn:hover { border-color: var(--physical); color: #6abf96; }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 200;
+    align-items: flex-end;
+    justify-content: center;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: #111;
+    border: 1px solid var(--border);
+    border-bottom: none;
+    border-radius: 10px 10px 0 0;
+    padding: 24px 20px 40px;
+    width: 100%;
+    max-width: 480px;
+    animation: slideUp 0.25s ease;
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(60px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+  }
+
+  .modal-title {
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+
+  .modal-sub {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-style: italic;
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+
+  .modal-info {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 16px;
+    font-style: italic;
+    line-height: 1.6;
+  }
+
+  .modal-info strong { color: var(--gold); font-style: normal; font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 1px; }
+
+  .modal-textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    line-height: 1.5;
+    padding: 12px;
+    resize: vertical;
+    min-height: 120px;
+    outline: none;
+    margin-bottom: 14px;
+  }
+
+  .modal-textarea:focus { border-color: var(--gold-dim); }
+
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+  }
+
+  .modal-btn {
+    flex: 1;
+    padding: 12px;
+    border-radius: var(--radius);
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid var(--border);
+  }
+
+  .modal-btn.primary {
+    background: linear-gradient(135deg, #1e1a08, #141208);
+    border-color: var(--gold-dim);
+    color: var(--gold);
+  }
+
+  .modal-btn.primary:hover { border-color: var(--gold); box-shadow: 0 0 12px rgba(201,168,76,0.15); }
+
+  .modal-btn.secondary {
+    background: none;
+    color: var(--text-muted);
+  }
+
+  .modal-btn.secondary:hover { color: var(--text-dim); }
+
+  .merge-opts {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .merge-opt {
+    flex: 1;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px 10px;
+    cursor: pointer;
+    background: none;
+    color: var(--text-muted);
+    font-family: 'Crimson Pro', serif;
+    font-size: 13px;
+    text-align: center;
+    transition: all 0.2s;
+  }
+
+  .merge-opt.selected { border-color: var(--gold-dim); color: var(--gold); background: rgba(201,168,76,0.05); }
+  .merge-opt small { display: block; font-size: 10px; font-style: italic; margin-top: 2px; opacity: 0.7; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-ornament">⸻ Registro Personal ⸻</div>
+    <h1>La <span>Cadena</span></h1>
+    <div class="header-sub">La cadena no necesita ser perfecta — necesita no ser interrumpida</div>
+    <div class="date-nav">
+      <button class="date-btn" id="prev-day" onclick="changeDay(-1)">‹</button>
+      <div id="current-date-display">—</div>
+      <button class="date-btn" id="next-day" onclick="changeDay(1)">›</button>
+    </div>
+  </header>
+
+  <!-- STREAK -->
+  <div class="streak-banner">
+    <div class="streak-icon">⛓️</div>
+    <div class="streak-info">
+      <div class="streak-number" id="streak-count">0</div>
+      <div class="streak-label">días sin romper la cadena</div>
+    </div>
+    <div class="streak-status" id="streak-status">—</div>
+  </div>
+
+  <!-- MINI CHAIN (last 28 days) -->
+  <div class="chain-section">
+    <div class="chain-label">Últimos 28 días</div>
+    <div>
+      <div class="chain-grid" id="chain-visual"></div>
+    </div>
+  </div>
+
+  <!-- DATA BAR -->
+  <div class="data-bar">
+    <button class="data-btn" onclick="openExport()">↑ Exportar datos</button>
+    <button class="data-btn import-btn" onclick="openImport()">↓ Importar datos</button>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('daily')">Hoy</button>
+    <button class="tab-btn" onclick="switchTab('weekly')">Semana</button>
+  </div>
+
+  <!-- DAILY TAB -->
+  <div class="tab-content active" id="tab-daily">
+
+    <!-- Progress summary -->
+    <div class="day-summary" style="margin-top:16px">
+      <div>
+        <div class="summary-text">Hábitos completados</div>
+        <div class="progress-bar-wrap" style="width:160px; margin-top:8px">
+          <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+        </div>
+      </div>
+      <div class="summary-pct" id="progress-pct">0%</div>
+    </div>
+
+    <!-- ESPIRITUALES -->
+    <div class="section-header">
+      <div class="section-dot dot-spiritual"></div>
+      <div class="section-title">Espirituales</div>
+      <div class="section-line"></div>
+    </div>
+
+    <div class="habit-item" data-id="misa" data-cat="spiritual" onclick="toggleHabit(this)">
+      <div class="habit-check">✓</div>
+      <div class="habit-name">Misa / comunión</div>
+      <div class="habit-emoji">🕊️</div>
+    </div>
+
+    <div class="habit-item" data-id="hora-santa" data-cat="spiritual" onclick="toggleHabit(this)">
+      <div class="habit-check">✓</div>
+      <div class="habit-name">Hora santa / adoración</div>
+      <div class="habit-emoji">🕯️</div>
+    </div>
+
+    <div class="habit-item" data-id="biblia" data-cat="spiritual" onclick="toggleHabit(this)">
+      <div class="habit-check">✓</div>
+      <div class="habit-name">Lectura de la Biblia</div>
+      <div class="habit-emoji">📖</div>
+    </div>
+
+    <!-- FÍSICOS / SALUD -->
+    <div class="section-header">
+      <div class="section-dot dot-physical"></div>
+      <div class="section-title">Físicos · Salud</div>
+      <div class="section-line"></div>
+    </div>
+
+    <div class="habit-item" data-id="sol" data-cat="physical" onclick="toggleHabit(this)">
+      <div class="habit-check">✓</div>
+      <div class="habit-name">Sol matutino (15 min)</div>
+      <div class="habit-emoji">☀️</div>
+    </div>
+
+    <div class="habit-item" data-id="menjurje" data-cat="physical" onclick="toggleHabit(this)">
+      <div class="habit-check">✓</div>
+      <div class="habit-name">Menjurje en ayunas</div>
+      <div class="habit-emoji">🌿</div>
+    </div>
+
+    <div class="habit-item" data-id="verduras" data-cat="physical" onclick="toggleHabit(this)">
+      <div class="habit-check">✓</div>
+      <div class="habit-name">Verduras en la dieta</div>
+      <div class="habit-emoji">🥦</div>
+    </div>
+
+    <div class="habit-item" data-id="yogurt" data-cat="physical" onclick="toggleHabit(this)">
+      <div class="habit-check">✓</div>
+      <div class="habit-name">Bowl de yogurt (noche)</div>
+      <div class="habit-emoji">🫙</div>
+    </div>
+
+    <div class="habit-item" data-id="suplementos" data-cat="physical" onclick="toggleHabit(this)">
+      <div class="habit-check">✓</div>
+      <div class="habit-name">Double X y Omega 3</div>
+      <div class="habit-emoji">💊</div>
+    </div>
+
+    <!-- NUMERIC: Sueño total -->
+    <div class="habit-item" data-id="sueno" data-cat="physical" data-numeric="true">
+      <div class="habit-check" style="opacity:0.3; cursor:default">○</div>
+      <div class="habit-name">Horas de sueño total</div>
+      <div class="habit-emoji">😴</div>
+    </div>
+    <div class="habit-numeric">
+      <div class="numeric-label">Registra las horas de sueño del reloj</div>
+      <div class="numeric-input-wrap">
+        <input class="numeric-input" type="number" id="val-sueno" min="0" max="12" step="0.1" placeholder="—" oninput="saveNumeric('sueno', this.value)">
+        <span class="numeric-unit">hrs</span>
+      </div>
+    </div>
+
+    <!-- NUMERIC: Deep sleep -->
+    <div class="habit-item" data-id="deep-sleep" data-cat="physical" data-numeric="true">
+      <div class="habit-check" style="opacity:0.3; cursor:default">○</div>
+      <div class="habit-name">Deep sleep</div>
+      <div class="habit-emoji">🌙</div>
+    </div>
+    <div class="habit-numeric">
+      <div class="numeric-label">Objetivo: 4 horas · dato del reloj</div>
+      <div class="numeric-input-wrap">
+        <input class="numeric-input" type="number" id="val-deep" min="0" max="8" step="0.1" placeholder="—" oninput="saveNumeric('deep', this.value)">
+        <span class="numeric-unit">hrs</span>
+      </div>
+    </div>
+
+    <!-- NUMERIC: Ritmo cardíaco -->
+    <div class="habit-item" data-id="hr" data-cat="physical" data-numeric="true">
+      <div class="habit-check" style="opacity:0.3; cursor:default">○</div>
+      <div class="habit-name">Ritmo cardíaco en reposo</div>
+      <div class="habit-emoji">❤️</div>
+    </div>
+    <div class="habit-numeric">
+      <div class="numeric-label">Promedio diario del reloj de muñeca</div>
+      <div class="numeric-input-wrap">
+        <input class="numeric-input" type="number" id="val-hr" min="30" max="150" step="1" placeholder="—" oninput="saveNumeric('hr', this.value)">
+        <span class="numeric-unit">bpm</span>
+      </div>
+    </div>
+
+    <!-- HIGIENE DIGITAL -->
+    <div class="section-header">
+      <div class="section-dot dot-digital"></div>
+      <div class="section-title">Higiene Digital</div>
+      <div class="section-line"></div>
+    </div>
+
+    <div class="habit-item" data-id="no-screens" data-cat="digital" onclick="toggleHabit(this)">
+      <div class="habit-check">✓</div>
+      <div class="habit-name">Sin YouTube / Instagram después 9 PM</div>
+      <div class="habit-emoji">📵</div>
+    </div>
+
+    <div class="autosave-note" id="autosave-note">✦ Los cambios se guardan automáticamente</div>
+  </div>
+
+  <!-- WEEKLY TAB -->
+  <div class="tab-content" id="tab-weekly">
+    <div class="week-grid" id="week-grid" style="padding-top:16px">
+      <div class="empty-state">
+        <div class="icon">⛓️</div>
+        Cargando semana…
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL EXPORTAR -->
+<div class="modal-overlay" id="modal-export" onclick="closeModals(event)">
+  <div class="modal">
+    <div class="modal-title">EXPORTAR HISTORIAL</div>
+    <div class="modal-sub">Copia este texto y guárdalo en Notes, WhatsApp, correo — donde quieras. Para restaurarlo en otro dispositivo, usa "Importar datos".</div>
+    <div class="modal-info">
+      <strong>Formato v1</strong> · Compatible con versiones futuras de La Cadena.<br>
+      Incluye todos los días registrados, hábitos y datos numéricos.
+    </div>
+    <textarea class="modal-textarea" id="export-textarea" readonly onclick="this.select()"></textarea>
+    <div class="modal-actions">
+      <button class="modal-btn primary" onclick="copyExport()">Copiar al portapapeles</button>
+      <button class="modal-btn secondary" onclick="closeModals()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL IMPORTAR -->
+<div class="modal-overlay" id="modal-import" onclick="closeModals(event)">
+  <div class="modal">
+    <div class="modal-title">IMPORTAR HISTORIAL</div>
+    <div class="modal-sub">Pega aquí el texto exportado desde otro dispositivo.</div>
+    <div class="modal-info">
+      <strong>Modo de fusión</strong> · Elige cómo combinar los datos importados con los locales.
+    </div>
+    <div class="merge-opts">
+      <button class="merge-opt selected" id="opt-merge" onclick="selectMerge('merge')">
+        Fusionar
+        <small>los locales ganan en conflicto</small>
+      </button>
+      <button class="merge-opt" id="opt-overwrite" onclick="selectMerge('overwrite')">
+        Reemplazar
+        <small>los importados ganan siempre</small>
+      </button>
+    </div>
+    <textarea class="modal-textarea" id="import-textarea" placeholder="Pega aquí el JSON exportado…"></textarea>
+    <div class="modal-actions">
+      <button class="modal-btn primary" onclick="doImport()">Importar</button>
+      <button class="modal-btn secondary" onclick="closeModals()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────
+const HABITS = [
+  { id: 'misa',       label: 'Misa / comunión',         cat: 'spiritual' },
+  { id: 'hora-santa', label: 'Hora santa / adoración',  cat: 'spiritual' },
+  { id: 'biblia',     label: 'Biblia antes de dormir',  cat: 'spiritual' },
+  { id: 'sol',        label: 'Sol matutino (15 min)',    cat: 'physical' },
+  { id: 'menjurje',   label: 'Menjurje en ayunas',      cat: 'physical' },
+  { id: 'verduras',   label: 'Verduras en la dieta',    cat: 'physical' },
+  { id: 'yogurt',     label: 'Bowl de yogurt',          cat: 'physical' },
+  { id: 'suplementos',label: 'Double X y Omega 3',      cat: 'physical' },
+  { id: 'no-screens', label: 'Sin pantallas 9 PM+',     cat: 'digital' },
+];
+
+const CHECKABLE_IDS = HABITS.map(h => h.id);
+
+let currentDate = todayStr();
+let db = JSON.parse(localStorage.getItem('cadena-db') || '{}');
+
+function todayStr() {
+  return new Date().toLocaleDateString('sv'); // YYYY-MM-DD
+}
+
+function getDay(dateStr) {
+  return db[dateStr] || { habits: {}, numerics: {} };
+}
+
+function saveDB() {
+  localStorage.setItem('cadena-db', JSON.stringify(db));
+}
+
+// ── DATE NAV ──────────────────────────────────────────────────────────
+function changeDay(delta) {
+  const d = new Date(currentDate + 'T12:00:00');
+  d.setDate(d.getDate() + delta);
+  const next = d.toLocaleDateString('sv');
+  if (next > todayStr()) return;
+  currentDate = next;
+  renderAll();
+}
+
+function formatDateDisplay(str) {
+  const d = new Date(str + 'T12:00:00');
+  const days = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  const months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  const label = str === todayStr() ? 'Hoy · ' : '';
+  return `${label}${days[d.getDay()]} ${d.getDate()} ${months[d.getMonth()]}`;
+}
+
+// ── HABIT TOGGLE ──────────────────────────────────────────────────────
+function toggleHabit(el) {
+  if (!db[currentDate]) db[currentDate] = { habits: {}, numerics: {} };
+  const id = el.dataset.id;
+  const current = db[currentDate].habits[id] || false;
+  db[currentDate].habits[id] = !current;
+  saveDB();
+  renderDailyHabits();
+  updateProgress();
+  computeStreak();
+  renderChain();
+}
+
+function saveNumeric(key, val) {
+  if (!db[currentDate]) db[currentDate] = { habits: {}, numerics: {} };
+  if (!db[currentDate].numerics) db[currentDate].numerics = {};
+  db[currentDate].numerics[key] = val;
+  saveDB();
+}
+
+// ── RENDER DAILY ──────────────────────────────────────────────────────
+function renderDailyHabits() {
+  const day = getDay(currentDate);
+  document.querySelectorAll('.habit-item[data-id]').forEach(el => {
+    const id = el.dataset.id;
+    if (el.dataset.numeric) return;
+    const done = day.habits[id] || false;
+    el.classList.toggle('completed', done);
+  });
+
+  // Numerics
+  const n = day.numerics || {};
+  const sField = document.getElementById('val-sueno');
+  const dField = document.getElementById('val-deep');
+  const hField = document.getElementById('val-hr');
+  if (sField) sField.value = n.sueno || '';
+  if (dField) dField.value = n.deep || '';
+  if (hField) hField.value = n.hr || '';
+}
+
+function updateProgress() {
+  const day = getDay(currentDate);
+  let done = 0;
+  CHECKABLE_IDS.forEach(id => { if (day.habits[id]) done++; });
+  const pct = Math.round((done / CHECKABLE_IDS.length) * 100);
+  document.getElementById('progress-pct').textContent = pct + '%';
+  document.getElementById('progress-bar').style.width = pct + '%';
+}
+
+// ── SAVE DAY ──────────────────────────────────────────────────────────
+function saveDay() {
+  if (!db[currentDate]) db[currentDate] = { habits: {}, numerics: {} };
+  saveDB();
+  computeStreak();
+  renderChain();
+  renderWeekly();
+  showToast('⛓ Cadena guardada');
+}
+
+// ── STREAK ────────────────────────────────────────────────────────────
+function getDayScore(dateStr) {
+  const day = db[dateStr];
+  if (!day) return 0;
+  let done = 0;
+  CHECKABLE_IDS.forEach(id => { if (day.habits && day.habits[id]) done++; });
+  return done / CHECKABLE_IDS.length;
+}
+
+function computeStreak() {
+  let streak = 0;
+  let d = new Date(todayStr() + 'T12:00:00');
+
+  // Walk backwards
+  while (true) {
+    const str = d.toLocaleDateString('sv');
+    const score = getDayScore(str);
+    if (score >= 0.7) {
+      streak++;
+      d.setDate(d.getDate() - 1);
+    } else {
+      break;
+    }
+  }
+
+  document.getElementById('streak-count').textContent = streak;
+  const statusEl = document.getElementById('streak-status');
+  if (streak === 0) {
+    statusEl.innerHTML = 'La cadena<br>espera';
+  } else if (streak < 7) {
+    statusEl.innerHTML = 'Construyendo<br>el hábito';
+  } else if (streak < 30) {
+    statusEl.innerHTML = `${streak} días<br>de fuerza`;
+  } else {
+    statusEl.innerHTML = `¡${streak} días!<br>Extraordinario`;
+  }
+}
+
+// ── CHAIN VISUAL ──────────────────────────────────────────────────────
+function renderChain() {
+  const grid = document.getElementById('chain-visual');
+  const days = 28;
+  const today = todayStr();
+  let cells = '';
+
+  // Day labels row
+  const dayLetters = ['D','L','M','X','J','V','S'];
+  cells += '<div class="chain-day-label">D</div><div class="chain-day-label">L</div><div class="chain-day-label">M</div><div class="chain-day-label">X</div><div class="chain-day-label">J</div><div class="chain-day-label">V</div><div class="chain-day-label">S</div>';
+
+  // Walk from (days-1) ago to today
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(today + 'T12:00:00');
+    d.setDate(d.getDate() - i);
+    const str = d.toLocaleDateString('sv');
+    const score = getDayScore(str);
+    const isFuture = str > today;
+    const isToday = str === today;
+
+    let cls = 'chain-day';
+    if (isFuture) { cls += ' empty'; }
+    else if (!db[str]) { cls += ' empty'; }
+    else if (score >= 0.7) { cls += ' done'; }
+    else if (score > 0) { cls += ' partial'; }
+    else { cls += ' missed'; }
+
+    if (isToday) cls += ' today';
+    if (str === currentDate && !isToday) cls += ' selected';
+
+    cells += `<div class="${cls}" title="${str}" onclick="jumpToDay('${str}')"></div>`;
+  }
+
+  grid.innerHTML = cells;
+}
+
+// ── JUMP TO DAY ───────────────────────────────────────────────────────
+function jumpToDay(str) {
+  if (str > todayStr()) return;
+  currentDate = str;
+  // Switch to daily tab if in weekly
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-daily').classList.add('active');
+  document.querySelector('.tab-btn').classList.add('active');
+  renderAll();
+}
+
+
+function renderWeekly() {
+  const grid = document.getElementById('week-grid');
+  const today = todayStr();
+  let html = '';
+
+  const dayNames = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  const shortMonths = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(today + 'T12:00:00');
+    d.setDate(d.getDate() - i);
+    const str = d.toLocaleDateString('sv');
+    const isToday = str === today;
+    const day = getDay(str);
+
+    let done = 0;
+    CHECKABLE_IDS.forEach(id => { if (day.habits && day.habits[id]) done++; });
+    const pct = CHECKABLE_IDS.length > 0 ? Math.round((done / CHECKABLE_IDS.length) * 100) : 0;
+    const hasData = !!db[str];
+
+    const dayLabel = `${dayNames[d.getDay()]} ${d.getDate()} ${shortMonths[d.getMonth()]}`;
+    const pctLabel = hasData ? pct + '%' : '—';
+    const pctCls = pct === 0 ? 'week-day-pct zero' : 'week-day-pct';
+    const todayMark = isToday ? ' 🔗' : '';
+
+    let dots = '';
+    HABITS.forEach(h => {
+      const done = day.habits && day.habits[h.id];
+      dots += `<div class="week-habit-dot ${h.cat}${done ? ' done' : ''}" title="${h.label}"></div>`;
+    });
+
+    html += `
+      <div class="week-day-row">
+        <div class="week-day-header">
+          <div class="week-day-name">${dayLabel}${todayMark}</div>
+          <div class="${pctCls}">${pctLabel}</div>
+        </div>
+        <div class="week-habits-row">${dots}</div>
+      </div>`;
+  }
+
+  grid.innerHTML = html;
+}
+
+// ── EXPORT / IMPORT ───────────────────────────────────────────────────
+const APP_ID  = 'la-cadena';
+const DB_VER  = 1;
+
+function buildExportPayload() {
+  return JSON.stringify({
+    version:    DB_VER,
+    app:        APP_ID,
+    exportedAt: todayStr(),
+    days:       db
+  }, null, 2);
+}
+
+function openExport() {
+  document.getElementById('export-textarea').value = buildExportPayload();
+  document.getElementById('modal-export').classList.add('open');
+}
+
+function copyExport() {
+  const ta = document.getElementById('export-textarea');
+  ta.select();
+  try {
+    navigator.clipboard.writeText(ta.value)
+      .then(() => { closeModals(); showToast('✦ Copiado al portapapeles'); })
+      .catch(() => { showToast('Selecciona el texto y copia manualmente'); });
+  } catch(e) {
+    showToast('Selecciona el texto y copia manualmente');
+  }
+}
+
+let mergeMode = 'merge'; // 'merge' | 'overwrite'
+
+function selectMerge(mode) {
+  mergeMode = mode;
+  document.getElementById('opt-merge').classList.toggle('selected', mode === 'merge');
+  document.getElementById('opt-overwrite').classList.toggle('selected', mode === 'overwrite');
+}
+
+function openImport() {
+  document.getElementById('import-textarea').value = '';
+  selectMerge('merge');
+  document.getElementById('modal-import').classList.add('open');
+}
+
+function doImport() {
+  const raw = document.getElementById('import-textarea').value.trim();
+  if (!raw) { showToast('⚠ Pega el JSON primero'); return; }
+
+  let payload;
+  try {
+    payload = JSON.parse(raw);
+  } catch(e) {
+    showToast('⚠ El texto no es JSON válido'); return;
+  }
+
+  // Validación mínima
+  if (payload.app !== APP_ID) {
+    showToast('⚠ Este historial no es de La Cadena'); return;
+  }
+  if (typeof payload.days !== 'object') {
+    showToast('⚠ Formato incorrecto'); return;
+  }
+
+  const incoming = payload.days;
+  let imported = 0;
+
+  if (mergeMode === 'overwrite') {
+    // Incoming wins on every day
+    Object.keys(incoming).forEach(dateStr => {
+      db[dateStr] = incoming[dateStr];
+      imported++;
+    });
+  } else {
+    // merge: local day wins; only import days that don't exist locally
+    Object.keys(incoming).forEach(dateStr => {
+      if (!db[dateStr]) {
+        db[dateStr] = incoming[dateStr];
+        imported++;
+      } else {
+        // Day exists locally — merge habit keys that are missing locally
+        const localDay = db[dateStr];
+        const inDay    = incoming[dateStr];
+        if (inDay.habits) {
+          if (!localDay.habits) localDay.habits = {};
+          Object.keys(inDay.habits).forEach(hid => {
+            if (!(hid in localDay.habits)) {
+              localDay.habits[hid] = inDay.habits[hid];
+            }
+          });
+        }
+        if (inDay.numerics) {
+          if (!localDay.numerics) localDay.numerics = {};
+          Object.keys(inDay.numerics).forEach(nid => {
+            if (!(nid in localDay.numerics)) {
+              localDay.numerics[nid] = inDay.numerics[nid];
+            }
+          });
+        }
+        imported++;
+      }
+    });
+  }
+
+  saveDB();
+  closeModals();
+  renderAll();
+  showToast(`✦ ${imported} días importados`);
+}
+
+function closeModals(event) {
+  // If called from overlay click, only close if they clicked the overlay itself
+  if (event && event.target !== event.currentTarget) return;
+  document.getElementById('modal-export').classList.remove('open');
+  document.getElementById('modal-import').classList.remove('open');
+}
+
+// ── TABS ──────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  event.target.classList.add('active');
+  if (tab === 'weekly') renderWeekly();
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────
+function renderAll() {
+  document.getElementById('current-date-display').textContent = formatDateDisplay(currentDate);
+  const isToday = currentDate === todayStr();
+  document.getElementById('next-day').style.opacity = isToday ? '0.2' : '1';
+  document.getElementById('next-day').style.pointerEvents = isToday ? 'none' : 'auto';
+  renderDailyHabits();
+  updateProgress();
+  computeStreak();
+  renderChain();
+}
+
+renderAll();
+</script>
+</body>
+</html>

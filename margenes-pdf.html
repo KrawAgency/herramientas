@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Márgenes para PDF</title>
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; background: #0f0f0f; font-family: Georgia, 'Times New Roman', serif; display: flex; align-items: center; justify-content: center; padding: 24px; }
+  main { width: 100%; max-width: 520px; }
+  header { margin-bottom: 36px; text-align: center; }
+  .eyebrow { font-size: 11px; letter-spacing: .25em; color: #888; text-transform: uppercase; margin-bottom: 8px; }
+  h1 { font-size: 32px; font-weight: normal; color: #f0ece4; margin: 0; letter-spacing: -.5px; }
+  .rule { width: 40px; height: 2px; background: #c9a84c; margin: 14px auto 0; }
+  #drop { display: block; border: 2px dashed #333; border-radius: 4px; padding: 32px 24px; text-align: center; cursor: pointer; background: rgba(255,255,255,.02); transition: all .2s; margin-bottom: 24px; }
+  #drop.over { border-color: #c9a84c; background: rgba(201,168,76,.04); }
+  #drop.has { border-color: #4a7c4e; background: rgba(74,124,78,.06); }
+  #dropIcon { font-size: 30px; margin-bottom: 8px; }
+  #dropName { color: #bbb; font-size: 14px; overflow-wrap: anywhere; }
+  #dropMeta { color: #888; font-size: 12px; margin-top: 4px; }
+  .panel { background: rgba(255,255,255,.03); border: 1px solid #222; border-radius: 4px; padding: 20px; margin-bottom: 20px; }
+  .panel-title { color: #888; font-size: 11px; letter-spacing: .15em; text-transform: uppercase; margin-bottom: 14px; }
+  .tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+  .tabs button { flex: 1; padding: 8px; border-radius: 3px; border: none; cursor: pointer; font: 12px Georgia, serif; background: #1a1a1a; color: #888; }
+  .tabs button.on { background: #c9a84c; color: #0f0f0f; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .preset { padding: 10px 8px; border-radius: 3px; border: 1px solid #2a2a2a; background: transparent; color: #888; cursor: pointer; font: 12px/1.3 Georgia, serif; text-align: left; }
+  .preset.on { border-color: #c9a84c; background: rgba(201,168,76,.1); color: #c9a84c; }
+  .field label { display: block; color: #888; font-size: 10px; margin-bottom: 4px; letter-spacing: .1em; text-transform: uppercase; }
+  .field div { display: flex; align-items: center; gap: 6px; color: #888; font-size: 11px; }
+  .field input { width: 100%; padding: 7px 8px; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 3px; color: #f0ece4; font: 13px Georgia, serif; }
+  #go { width: 100%; padding: 14px; background: #c9a84c; color: #0f0f0f; border: none; border-radius: 4px; font: 14px Georgia, serif; cursor: pointer; letter-spacing: .05em; }
+  #go:disabled { background: #1a1a1a; color: #555; cursor: not-allowed; }
+  #bar { margin-top: 10px; background: #1a1a1a; border-radius: 2px; height: 3px; }
+  #barFill { height: 100%; width: 0; background: #c9a84c; border-radius: 2px; transition: width .2s; }
+  #msg { margin-top: 14px; padding: 12px 16px; background: rgba(74,124,78,.1); border: 1px solid #2a4a2d; border-radius: 4px; color: #6abf74; font-size: 13px; text-align: center; }
+  #msg.err { background: rgba(190,70,70,.1); border-color: #5a2a2a; color: #e08a8a; }
+  footer { color: #666; font-size: 11px; text-align: center; margin-top: 20px; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="eyebrow">Herramienta de impresión</div>
+    <h1>Márgenes para PDF</h1>
+    <div class="rule"></div>
+  </header>
+
+  <label id="drop">
+    <input id="pdfInput" type="file" accept="application/pdf" hidden>
+    <div id="dropIcon">⬆️</div>
+    <div id="dropName">Arrastra tu PDF aquí o toca para seleccionar</div>
+    <div id="dropMeta"></div>
+  </label>
+
+  <section class="panel">
+    <div class="panel-title">Configuración de márgenes</div>
+    <div class="tabs">
+      <button type="button" id="tabPreset" class="on">Presets</button>
+      <button type="button" id="tabCustom">Personalizado</button>
+    </div>
+    <div class="grid" id="presets"></div>
+    <div class="grid" id="custom" hidden></div>
+  </section>
+
+  <button id="go" disabled>Agregar márgenes y descargar</button>
+  <div id="bar" hidden><div id="barFill"></div></div>
+  <div id="msg" hidden></div>
+  <footer>Todo se procesa localmente en tu dispositivo · Ningún archivo se sube a servidores</footer>
+</main>
+
+<script>
+  const { PDFDocument } = PDFLib;
+  const CM = 28.35; // puntos por centímetro
+
+  // Márgenes en cm: arriba, derecha, abajo, izquierda (lomo)
+  const PRESETS = [
+    { label: 'Chico (0.5 cm)',  m: [0.5, 0.5, 0.5, 0.5] },
+    { label: 'Mediano (1 cm)',  m: [1, 1, 1, 1] },
+    { label: 'Grande (1.5 cm)', m: [1.5, 1.5, 1.5, 1.5] },
+    { label: 'Encuadernado (lomo 2 cm / resto 1 cm)', m: [1, 1, 1, 2] },
+  ];
+  const FIELDS = [['top', 'Superior'], ['bottom', 'Inferior'], ['left', 'Izquierdo (lomo)'], ['right', 'Derecho']];
+
+  const $ = id => document.getElementById(id);
+  let file = null, preset = PRESETS[1], useCustom = false;
+
+  PRESETS.forEach(p => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'preset' + (p === preset ? ' on' : '');
+    b.textContent = p.label;
+    b.onclick = () => {
+      preset = p;
+      document.querySelectorAll('.preset').forEach(x => x.classList.toggle('on', x === b));
+    };
+    $('presets').appendChild(b);
+  });
+
+  FIELDS.forEach(([key, label]) => {
+    const f = document.createElement('div');
+    f.className = 'field';
+    f.innerHTML = `<label for="m-${key}">${label}</label><div><input id="m-${key}" type="number" min="0" max="5" step="0.1" value="1"><span>cm</span></div>`;
+    $('custom').appendChild(f);
+  });
+
+  function setMode(custom) {
+    useCustom = custom;
+    $('tabCustom').classList.toggle('on', custom);
+    $('tabPreset').classList.toggle('on', !custom);
+    $('custom').hidden = !custom;
+    $('presets').hidden = custom;
+  }
+  $('tabPreset').onclick = () => setMode(false);
+  $('tabCustom').onclick = () => setMode(true);
+
+  function getMargins() {
+    if (useCustom) {
+      const v = k => (parseFloat($('m-' + k).value) || 0) * CM;
+      return { top: v('top'), right: v('right'), bottom: v('bottom'), left: v('left') };
+    }
+    const [top, right, bottom, left] = preset.m.map(c => c * CM);
+    return { top, right, bottom, left };
+  }
+
+  function showMsg(text, isErr) {
+    $('msg').textContent = text;
+    $('msg').classList.toggle('err', !!isErr);
+    $('msg').hidden = false;
+  }
+
+  async function handleFile(f) {
+    if (!f) return;
+    if (f.type !== 'application/pdf' && !/\.pdf$/i.test(f.name)) {
+      showMsg('Ese archivo no es un PDF.', true);
+      return;
+    }
+    file = f;
+    $('msg').hidden = true;
+    $('drop').classList.add('has');
+    $('dropIcon').textContent = '📄';
+    $('dropName').textContent = f.name;
+    const mb = (f.size / 1024 / 1024).toFixed(1) + ' MB';
+    $('dropMeta').textContent = mb;
+    $('go').disabled = false;
+    try {
+      const doc = await PDFDocument.load(await f.arrayBuffer(), { ignoreEncryption: true });
+      $('dropMeta').textContent = `${mb} · ${doc.getPageCount()} páginas`;
+    } catch (e) { /* el error real se muestra al procesar */ }
+  }
+
+  async function addMargins(bytes, margins, onProgress) {
+    const src = await PDFDocument.load(bytes);
+    const out = await PDFDocument.create();
+    const total = src.getPageCount();
+    for (let i = 0; i < total; i++) {
+      const embedded = await out.embedPage(src.getPage(i));
+      const { width, height } = embedded;
+      const page = out.addPage([width + margins.left + margins.right, height + margins.top + margins.bottom]);
+      page.drawPage(embedded, { x: margins.left, y: margins.bottom, width, height });
+      onProgress(Math.round(((i + 1) / total) * 100));
+    }
+    return out.save();
+  }
+
+  $('pdfInput').onchange = e => handleFile(e.target.files[0]);
+  const drop = $('drop');
+  drop.ondragover = e => { e.preventDefault(); drop.classList.add('over'); };
+  drop.ondragleave = () => drop.classList.remove('over');
+  drop.ondrop = e => { e.preventDefault(); drop.classList.remove('over'); handleFile(e.dataTransfer.files[0]); };
+
+  $('go').onclick = async () => {
+    if (!file) return;
+    const go = $('go');
+    go.disabled = true;
+    $('msg').hidden = true;
+    $('bar').hidden = false;
+    const progress = p => {
+      go.textContent = `Procesando... ${p}%`;
+      $('barFill').style.width = p + '%';
+    };
+    progress(0);
+    try {
+      const bytes = await addMargins(await file.arrayBuffer(), getMargins(), progress);
+      const url = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = file.name.replace(/\.pdf$/i, '') + '_con_margenes.pdf';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
+      showMsg('✓ PDF descargado con márgenes incluidos');
+    } catch (err) {
+      showMsg('Error al procesar el PDF: ' + err.message, true);
+    } finally {
+      go.disabled = false;
+      go.textContent = 'Agregar márgenes y descargar';
+      $('bar').hidden = true;
+    }
+  };
+</script>
+</body>
+</html>

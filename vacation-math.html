@@ -1,0 +1,368 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Vacation Math</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,500;0,600;0,700;0,800;1,800&display=swap">
+<style>
+/* Layout: herramienta de celular de una columna. Lista de 4 renglones (icono · etiqueta · control), una franja con el costo por noche, y dos tarjetas cerradas que se abren al tocarlas. Paleta del catálogo: azul marino + dorado. */
+:root{
+  --bg:#F2F3F5; --surface:#FFFFFF; --fg:#16202F; --muted:#6B7480; --line:#E4E7EB;
+  --navy:#16202F; --gold:#B8902F; --gold-soft:#F6EFDD; --good:#1E7A52; --good-soft:#E3F2EA; --bad:#B4372F;
+  --onnavy:#FFFFFF;
+  --f:"Montserrat","Helvetica Neue",Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0E141C; --surface:#18212C; --fg:#EEF1F4; --muted:#9AA5B2; --line:#26313D;
+  --navy:#EEF1F4; --gold:#D6B562; --gold-soft:#3A3220; --good:#5BC793; --good-soft:#173026; --bad:#E07A72;
+  --onnavy:#0E141C; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E141C; --surface:#18212C; --fg:#EEF1F4; --muted:#9AA5B2; --line:#26313D;
+  --navy:#EEF1F4; --gold:#D6B562; --gold-soft:#3A3220; --good:#5BC793; --good-soft:#173026; --bad:#E07A72;
+  --onnavy:#0E141C; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--fg);font-family:var(--f);font-size:16px;line-height:1.4;font-variant-numeric:tabular-nums}
+main{max-width:480px;margin:0 auto;padding-block:20px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
+.ico{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+button{font:inherit;cursor:pointer}
+button:focus-visible,summary:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+input:focus,select:focus{outline:none}
+
+.head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 4px 4px}
+.head h1{margin:0;font-weight:800;font-style:italic;font-size:24px;letter-spacing:-.01em}
+.new{display:flex;align-items:center;gap:6px;border:0;background:transparent;color:var(--gold);font-weight:700;font-size:14px;padding:8px 4px}
+
+.list{background:var(--surface);border-radius:16px;overflow:hidden}
+.row{display:flex;align-items:center;gap:12px;min-height:60px;padding:8px 16px;border-top:1px solid var(--line)}
+.row:first-child{border-top:0}
+.row>.ico{color:var(--gold)}
+.row label,.row .lb{flex:1;min-width:0;font-weight:600;font-size:15px;color:var(--fg)}
+.money{display:flex;align-items:baseline;gap:2px;justify-content:flex-end}
+.money span{color:var(--muted);font-weight:700;font-size:16px}
+.money input{width:5ch;max-width:8ch;min-width:0;border:0;background:transparent;color:var(--fg);font:inherit;font-weight:800;font-size:22px;text-align:right;padding:4px 0;border-bottom:2px solid transparent}
+.money input:focus{border-bottom-color:var(--gold)}
+.step{display:flex;align-items:center;gap:4px}
+.step button{width:36px;height:36px;border-radius:50%;border:0;background:var(--gold-soft);color:var(--fg);font-weight:700;font-size:20px;line-height:1}
+.pick{display:flex;align-items:center;gap:6px;border:0;background:transparent;color:var(--fg);font-weight:700;font-size:15px;padding:8px 0}
+.pick .ico{width:18px;height:18px;color:var(--muted);transition:transform .2s}
+.pick[aria-expanded="true"] .ico{transform:rotate(180deg)}
+.sub{background:var(--bg);margin:0 10px 10px;border-radius:12px;padding:4px 12px}
+.srow{display:flex;align-items:center;gap:12px;min-height:52px}
+.srow .lb{flex:1;font-weight:600;font-size:14px;color:var(--fg)}
+.srow .step button{background:var(--surface)}
+.ages{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px;padding:4px 0 10px}
+.ages label{display:grid;gap:3px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.ages select{font:inherit;font-size:15px;font-weight:700;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:7px 6px;text-transform:none;letter-spacing:0}
+.step .money{min-width:0;padding:0 2px}
+.step button{touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.step output{width:2.2ch;text-align:center;font-weight:800;font-size:22px}
+.seg{display:flex;background:var(--bg);border-radius:10px;padding:3px}
+.seg button{border:0;border-radius:8px;padding:8px 12px;background:transparent;color:var(--muted);font-weight:700;font-size:13px}
+.seg button[aria-pressed="true"]{background:var(--navy);color:var(--onnavy)}
+.row select{max-width:60%;border:0;background:transparent;color:var(--fg);font:inherit;font-weight:700;font-size:15px;text-align:right;text-align-last:right;padding:8px 0}
+
+.strip{display:flex;align-items:center;gap:10px;padding:14px 16px;border-radius:16px;background:var(--surface);color:var(--muted);font-size:14px;font-weight:600}
+.strip .ico{color:var(--gold)}
+.strip b{color:var(--fg);font-size:20px;font-weight:800}
+.strip .sp{margin-left:auto;text-align:right}
+.warn{color:var(--bad);font-size:14px;font-weight:600;padding:0 4px}
+
+.scen{background:var(--surface);border-radius:16px;border:1.5px solid transparent}
+.scen.best{border-color:var(--gold)}
+.scen summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 16px;border-radius:16px}
+.scen summary::-webkit-details-marker{display:none}
+.scen h2{margin:0;font-size:20px;font-weight:800;font-style:italic}
+.scen.best h2{color:var(--gold)}
+.chev{color:var(--muted);transition:transform .2s}
+.scen[open] .chev{transform:rotate(180deg)}
+.reveal{padding:0 16px 16px;display:grid;gap:12px}
+.big{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.tot{font-weight:800;font-size:36px;line-height:1}
+.save{font-weight:800;font-size:14px;color:var(--good);background:var(--good-soft);border-radius:999px;padding:6px 12px;white-space:nowrap}
+.save.neg{color:var(--bad);background:transparent;border:1.5px solid var(--bad)}
+.rows{display:grid;gap:12px;font-size:14px;border-top:1px solid var(--line);padding-top:12px}
+.it{display:grid;gap:6px}
+.ln{display:flex;align-items:center;gap:10px}
+.ln>.ico{width:16px;height:16px;color:var(--muted)}
+.lbl{flex:1;min-width:0;color:var(--muted);display:flex;align-items:center;gap:2px}
+.val{font-weight:700;white-space:nowrap}
+.minus .val{color:var(--good)}
+.ib{border:0;background:transparent;color:var(--muted);padding:6px;margin:-6px 0;display:inline-flex;border-radius:50%;flex:none}
+.ib .ico{width:15px;height:15px;opacity:.6}
+.ib[aria-expanded="true"]{color:var(--gold)}
+.ib[aria-expanded="true"] .ico{opacity:1}
+.inf{margin:0 0 2px 26px;padding:4px 0 4px 12px;border-left:2px solid var(--gold);display:grid;gap:5px;font-size:13px}
+.inf .l{display:flex;justify-content:space-between;gap:12px;color:var(--fg)}
+.inf .l span:last-child{font-weight:700;white-space:nowrap}
+.inf .x{color:var(--fg);line-height:1.45;margin-bottom:3px}
+.inf .f{font-size:11.5px;color:var(--muted);line-height:1.4}
+.note{font-size:12px;color:var(--muted);margin:0}
+.sec{margin:14px 4px 0;font-size:13px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.sec.next{margin-top:26px;color:var(--gold)}
+.fine{font-size:11.5px;color:var(--muted);text-align:center;margin:4px 0 0}
+@media (prefers-reduced-motion:reduce){.chev{transition:none}}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-dollar" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="M15 9.2c-.5-1-1.6-1.5-3-1.5-1.7 0-3 .9-3 2.2 0 3 6 1.6 6 4.6 0 1.3-1.3 2.2-3 2.2-1.5 0-2.6-.6-3.1-1.6M12 5.8v12.4"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.6 6.6 0 0 0 10.5 10.5z"/></symbol>
+  <symbol id="i-plane" viewBox="0 0 24 24"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></symbol>
+  <symbol id="i-bed" viewBox="0 0 24 24"><path d="M2 4v16M2 8h18a2 2 0 0 1 2 2v10M2 17h20M6 8v9"/></symbol>
+  <symbol id="i-ticket" viewBox="0 0 24 24"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2M13 17v2M13 11v2"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="M12 11v6M12 7.6v.01"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="9" r="3.2"/><path d="M6.5 20.5v-1.2a3.6 3.6 0 0 1 3.6-3.6h3.8a3.6 3.6 0 0 1 3.6 3.6v1.2"/></symbol>
+  <symbol id="i-baby" viewBox="0 0 24 24"><path d="M9 12h.01M15 12h.01M10 16c.5.3 1.2.5 2 .5s1.5-.2 2-.5M19 6.3a9 9 0 0 1 1.8 3.9 2 2 0 0 1 0 3.6 9 9 0 0 1-17.6 0 2 2 0 0 1 0-3.6A9 9 0 0 1 12 3c2 0 3.5 1.1 3.5 2.5s-.9 2.5-2 2.5c-.8 0-1.5-.4-1.5-1"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+  <symbol id="i-new" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></symbol>
+</svg>
+
+<main>
+  <div class="head">
+    <h1>Vacation Math</h1>
+    <button class="new" id="reset" type="button"><svg class="ico"><use href="#i-new"/></svg>New guest</button>
+  </div>
+
+  <h2 class="sec">This vacation</h2>
+  <section class="list" aria-label="This vacation">
+    <div class="row">
+      <svg class="ico" aria-hidden="true"><use href="#i-dollar"/></svg>
+      <label for="paid">You paid</label>
+      <div class="step"><button type="button" class="bump" data-for="paid" data-d="-100" aria-label="Minus $100">−</button><div class="money"><span>$</span><input id="paid" type="text" inputmode="decimal" autocomplete="off" value="2,500"></div><button type="button" class="bump" data-for="paid" data-d="100" aria-label="Plus $100">+</button></div>
+    </div>
+    <div class="row">
+      <svg class="ico" aria-hidden="true"><use href="#i-moon"/></svg>
+      <span class="lb" id="nl">Nights</span>
+      <div class="step" role="group" aria-labelledby="nl">
+        <button type="button" id="nminus" aria-label="One night less">−</button>
+        <output id="nights">5</output>
+        <button type="button" id="nplus" aria-label="One night more">+</button>
+      </div>
+    </div>
+    <div class="row">
+      <svg class="ico" aria-hidden="true"><use href="#i-users"/></svg>
+      <span class="lb">People</span>
+      <button type="button" class="pick" id="pplBtn" aria-expanded="false" aria-controls="pplBox"><span id="pplSum">2 adults</span><svg class="ico" aria-hidden="true"><use href="#i-chev"/></svg></button>
+    </div>
+    <div class="sub" id="pplBox" hidden>
+      <div class="srow">
+        <span class="lb" id="adults-l">Adults</span>
+        <div class="step" role="group" aria-labelledby="adults-l">
+          <button type="button" class="cnt" data-k="adults" data-d="-1" aria-label="One adult less">−</button>
+          <output id="adults">2</output>
+          <button type="button" class="cnt" data-k="adults" data-d="1" aria-label="One adult more">+</button>
+        </div>
+      </div>
+      <div class="srow">
+        <span class="lb" id="kids-l">Kids</span>
+        <div class="step" role="group" aria-labelledby="kids-l">
+          <button type="button" class="cnt" data-k="kids" data-d="-1" aria-label="One kid less">−</button>
+          <output id="kids">0</output>
+          <button type="button" class="cnt" data-k="kids" data-d="1" aria-label="One kid more">+</button>
+        </div>
+      </div>
+      <div class="ages" id="ages" hidden></div>
+    </div>
+    <div class="row">
+      <svg class="ico" aria-hidden="true"><use href="#i-plane"/></svg>
+      <span class="lb" id="fl">Flights</span>
+      <div class="seg" role="group" aria-labelledby="fl">
+        <button type="button" id="m-inc" aria-pressed="true">Included</button>
+        <button type="button" id="m-sep" aria-pressed="false">Separate</button>
+      </div>
+    </div>
+    <div class="row" id="incBox">
+      <svg class="ico" aria-hidden="true"><use href="#i-pin"/></svg>
+      <label for="origin">From</label>
+      <select id="origin"></select>
+    </div>
+    <div class="row" id="sepBox" hidden>
+      <svg class="ico" aria-hidden="true"><use href="#i-ticket"/></svg>
+      <label for="flights">Flights, total</label>
+      <div class="step"><button type="button" class="bump" data-for="flights" data-d="-100" aria-label="Minus $100">−</button><div class="money"><span>$</span><input id="flights" type="text" inputmode="decimal" autocomplete="off" value="900"></div><button type="button" class="bump" data-for="flights" data-d="100" aria-label="Plus $100">+</button></div>
+    </div>
+  </section>
+
+  <div class="strip">
+    <svg class="ico" aria-hidden="true"><use href="#i-bed"/></svg>
+    <span>Per night<br><b id="o-night">—</b></span>
+    <span class="sp">Total<br><b id="o-trip">—</b></span>
+  </div>
+  <div class="warn" id="o-warn" hidden></div>
+
+  <h2 class="sec next">Your next vacation</h2>
+  <details class="scen" id="d-worst">
+    <summary><h2>Worst case with us</h2><svg class="ico chev" aria-hidden="true"><use href="#i-chev"/></svg></summary>
+    <div class="reveal">
+      <div class="big"><div class="tot" id="w-tot">—</div><div class="save" id="w-save">—</div></div>
+      <div class="rows" id="w-rows"></div>
+      <p class="note">World of Hyatt membership is free.</p>
+    </div>
+  </details>
+
+  <details class="scen best" id="d-best">
+    <summary><h2>Best case with us</h2><svg class="ico chev" aria-hidden="true"><use href="#i-chev"/></svg></summary>
+    <div class="reveal">
+      <div class="big"><div class="tot" id="b-tot">—</div><div class="save" id="b-save">—</div></div>
+      <div class="rows" id="b-rows"></div>
+      <p class="note">UVC member rate and Flyback are member benefits.</p>
+    </div>
+  </details>
+
+  <p class="fine">Estimates for the same trip next time: same travelers, same nights, similar rate.</p>
+</main>
+
+<script>
+(function(){
+  /* Reglas del cálculo: cámbialas aquí si cambian las condiciones */
+  var CERT_PRICE=300, CERT_NIGHTS=2, UVC_OFF=0.25, HYATT_OFF=0.10, FLYBACK_PER_TICKET=500,
+      CERT_ADULTS=2, EXTRA_PER_NIGHT=80; /* niños 3+ (y adulto extra) pagan ~$80 por noche en el certificado; menores de 3 gratis */
+
+  /* Boleto redondo promedio por persona, USD. KAYAK, últimos 12 meses (consultado oct 2026). La 3a columna es el texto del botón de info. */
+  var ORIGINS=[
+    ['Chicago',492,'KAYAK average, Chicago → Cancún, last 12 months'],
+    ['New York / Newark',515,'KAYAK average, New York → Cancún, last 12 months'],
+    ['Dallas–Fort Worth',447,'KAYAK average, Dallas–Fort Worth → Cancún, last 12 months'],
+    ['Houston / Texas',450,'Estimate from the KAYAK Dallas–Fort Worth average ($447)'],
+    ['Fort Lauderdale / Miami',382,'KAYAK average, Fort Lauderdale → Cancún, last 12 months'],
+    ['Orlando / Tampa',414,'KAYAK average, Orlando → Cancún, last 12 months'],
+    ['Other U.S. city',529,'KAYAK average, all U.S. cities → Cancún, last 12 months'],
+    ['Toronto',410,'KAYAK average, Toronto → Cancún, last 12 months: C$572 ≈ $410 USD'],
+    ['Other Canada',487,'KAYAK average, Canada → Cancún, last 12 months: C$676 ≈ $487 USD']
+  ];
+  var openInfo={};
+  var DEF={paid:'2,500',nights:5,mode:'inc',origin:0,flights:'900',adults:2};
+  var LIM={adults:[1,6],kids:[0,6]}, who={adults:2,ages:[]}, NEW_KID_AGE=8;
+
+  var $=function(id){return document.getElementById(id)};
+  var sel=$('origin');
+  ORIGINS.forEach(function(o,i){var op=document.createElement('option');op.value=i;op.textContent=o[0];sel.appendChild(op);});
+
+  var nights=DEF.nights, mode=DEF.mode;
+  function num(v){var n=parseFloat(String(v).replace(/[^0-9.]/g,''));return isFinite(n)?n:0}
+  function usd(n){return '$'+Math.round(n).toLocaleString('en-US')}
+  function fit(inp){inp.style.width=(Math.max(2,inp.value.length)+0.4)+'ch';}
+  function pretty(inp){var n=num(inp.value);if(inp.value.trim()!=='')inp.value=n?Math.round(n).toLocaleString('en-US'):'';fit(inp);}
+
+  function setMode(m){mode=m;$('m-inc').setAttribute('aria-pressed',m==='inc');$('m-sep').setAttribute('aria-pressed',m==='sep');$('incBox').hidden=m!=='inc';$('sepBox').hidden=m!=='sep';calc();}
+
+  /* r = [icono, etiqueta, valor, info {lines:[[a,b]], text, foot}, verde?]  Solo una explicación abierta por tarjeta. */
+  function rows(el,list){
+    el.innerHTML='';
+    list.forEach(function(r){
+      var key=r[0], info=r[3], open=openInfo[el.id]===key;
+      var it=document.createElement('div');it.className='it'+(r[4]?' minus':'');
+      it.innerHTML='<div class="ln"><svg class="ico" aria-hidden="true"><use href="#i-'+r[0]+'"/></svg>'+
+        '<span class="lbl"><span class="t"></span><button type="button" class="ib" aria-label="More info"><svg class="ico" aria-hidden="true"><use href="#i-info"/></svg></button></span>'+
+        '<span class="val"></span></div><div class="inf"></div>';
+      it.querySelector('.t').textContent=r[1];it.querySelector('.val').textContent=r[2];
+      var inf=it.querySelector('.inf'),b=it.querySelector('.ib');
+      function add(cls,a,v){var d=document.createElement('div');d.className=cls;var x=document.createElement('span');x.textContent=a;d.appendChild(x);if(v!==undefined){var y=document.createElement('span');y.textContent=v;d.appendChild(y);}inf.appendChild(d);}
+      if(info.text)add('x',info.text);
+      (info.lines||[]).forEach(function(l){add('l',l[0],l[1])});
+      if(info.foot)add('f',info.foot);
+      inf.hidden=!open;b.setAttribute('aria-expanded',open);
+      b.addEventListener('click',function(){openInfo[el.id]=open?null:key;calc();});
+      el.appendChild(it);
+    });
+  }
+  function save(el,trip,x){var s=trip-x;el.classList.toggle('neg',s<0);el.textContent=s>=0?('Save '+usd(s)+' · '+Math.round(s/trip*100)+'%'):(usd(-s)+' more');}
+
+  function calc(){
+    $('nights').textContent=nights;
+    var kidsN=who.ages.length, kids3=who.ages.filter(function(a){return a>=3}).length, laps=who.ages.filter(function(a){return a<2}).length;
+    $('adults').textContent=who.adults;$('kids').textContent=kidsN;
+    $('pplSum').textContent=who.adults+(who.adults===1?' adult':' adults')+(kidsN?' · '+kidsN+(kidsN===1?' kid':' kids'):'');
+    var tickets=who.adults+kidsN-laps, extraAd=Math.max(who.adults-CERT_ADULTS,0);
+    var certKids=kids3*EXTRA_PER_NIGHT*CERT_NIGHTS, certAd=extraAd*EXTRA_PER_NIGHT*CERT_NIGHTS, cert=CERT_PRICE+certKids+certAd;
+    var paid=num($('paid').value);
+    var ticket=mode==='inc'?ORIGINS[+sel.value][1]:num($('flights').value)/tickets;
+    var flights=ticket*tickets;
+    var hotel=mode==='inc'?paid-flights:paid;
+    var trip=mode==='inc'?paid:paid+flights;
+    var warn=$('o-warn');
+    if(!paid||hotel/nights<100){
+      warn.hidden=false;
+      warn.textContent=!paid?'Enter what they paid.':(mode==='inc'?'After flights for '+tickets+', that leaves under $100 a night for the hotel. Check the amount or switch Flights to Separate.':'That is under $100 a night. Check the amount.');
+      ['o-trip','o-night','b-tot','w-tot','b-save','w-save'].forEach(function(id){$(id).textContent='—'});
+      $('b-save').classList.remove('neg');$('w-save').classList.remove('neg');rows($('b-rows'),[]);rows($('w-rows'),[]);return;
+    }
+    warn.hidden=true;
+    var perNight=hotel/nights, extra=Math.max(nights-CERT_NIGHTS,0);
+    var hy=perNight*(1-HYATT_OFF), uvc=perNight*(1-UVC_OFF);
+    var flyback=tickets*FLYBACK_PER_TICKET;
+    var worst=cert+extra*hy+flights, best=cert+extra*uvc+flights-flyback;
+
+    $('o-trip').textContent=usd(trip);
+    $('o-night').textContent=usd(perNight);
+
+    var o=ORIGINS[+sel.value];
+    var rateFoot=mode==='inc'?'('+usd(paid)+' − '+usd(flights)+' flights) ÷ '+nights+' nights':usd(paid)+' ÷ '+nights+' nights';
+    var flightInfo=mode==='inc'
+      ?{text:'Your package included flights, so we estimate them with the average fare from your city. We take that out of what you paid to find your hotel rate, and count the same flights for your next trip.',lines:[['Avg. round trip, per person',usd(ticket)],['× '+tickets+(tickets===1?' ticket':' tickets'),usd(flights)]],foot:'Source: '+o[2]+'.'+(laps?' Kids under 2 fly on a lap, no ticket.':'')}
+      :{text:'You paid your flights separately, so we use your real cost and assume your next flights cost about the same.',lines:[['Your flights this trip',usd(flights)]]};
+    function list(rate,pct,club,clubText){
+      var cl=[['Certificate, 2 adults',usd(CERT_PRICE)]];
+      if(kids3)cl.push(['+ '+kids3+(kids3===1?' kid':' kids')+' 3+ × '+usd(EXTRA_PER_NIGHT)+' × '+CERT_NIGHTS+' nights',usd(certKids)]);
+      if(extraAd)cl.push(['+ '+extraAd+' extra '+(extraAd===1?'adult':'adults')+' × '+usd(EXTRA_PER_NIGHT)+' × '+CERT_NIGHTS+' nights',usd(certAd)]);
+      var l=[['ticket',CERT_NIGHTS+' nights · certificate',usd(cert),{text:'Your certificate covers 3 days / 2 nights, all-inclusive, for 2 adults. For this example we use a resort in the Cancún area, so the flights match this trip. Cancún isn\'t the only place you can use it.',lines:cl,
+        foot:(kidsN||extraAd)?'Kids under 3 stay free. From age 3, about '+usd(EXTRA_PER_NIGHT)+' per night; it varies by resort.':''}]];
+      if(extra>0)l.push(['bed',extra+(extra===1?' night':' nights')+' × '+usd(rate),usd(extra*rate),
+        {text:'We start from what you are paying per night on this trip, then apply '+clubText+' to the nights after the certificate.',lines:[['This trip, per night',usd(perNight)],['−'+pct+' '+club,usd(rate)],['× '+extra+(extra===1?' night':' nights'),usd(extra*rate)]],foot:'Per night: '+rateFoot}]);
+      l.push(['plane','Flights',mode==='inc'?'same as this trip':usd(flights),flightInfo]);
+      return l;
+    }
+    rows($('w-rows'),list(hy,'10%','World of Hyatt','the World of Hyatt member rate (free to join)'));
+    rows($('b-rows'),list(uvc,'25%','UVC member rate','the UVC member rate').concat([['back','Flyback','−'+usd(flyback),
+      {text:'As UVC members, you get '+usd(FLYBACK_PER_TICKET)+' back for each flight ticket, kids included, whatever the ticket cost.',lines:[[usd(FLYBACK_PER_TICKET)+' × '+tickets+(tickets===1?' ticket':' tickets'),usd(flyback)]]},true]]));
+    $('b-tot').textContent=usd(best);$('w-tot').textContent=usd(worst);
+    save($('b-save'),trip,best);save($('w-save'),trip,worst);
+  }
+
+  function reset(){openInfo={};$('d-best').open=false;$('d-worst').open=false;$('paid').value=DEF.paid;$('flights').value=DEF.flights;nights=DEF.nights;who={adults:DEF.adults,ages:[]};drawAges();$('pplBox').hidden=true;$('pplBtn').setAttribute('aria-expanded','false');sel.value=DEF.origin;fit($('paid'));fit($('flights'));setMode(DEF.mode);}
+
+  /* Botones de $100: un toque suma o resta; si lo dejas presionado, sigue corriendo */
+  document.querySelectorAll('.bump').forEach(function(b){
+    var t,iv,el=$(b.dataset.for),d=+b.dataset.d;
+    function bump(){var n=Math.max(0,num(el.value)+d);el.value=n.toLocaleString('en-US');fit(el);calc();}
+    function stop(){clearTimeout(t);clearInterval(iv);}
+    b.addEventListener('pointerdown',function(e){e.preventDefault();bump();t=setTimeout(function(){iv=setInterval(bump,90)},450);});
+    ['pointerup','pointerleave','pointercancel'].forEach(function(ev){b.addEventListener(ev,stop)});
+    b.addEventListener('click',function(e){if(e.detail===0)bump();});
+  });
+  /* Edades de los niños: un select por niño, solo aparece si hay niños */
+  function drawAges(){
+    var box=$('ages');box.innerHTML='';box.hidden=!who.ages.length;
+    who.ages.forEach(function(age,i){
+      var l=document.createElement('label'),sp=document.createElement('span'),se=document.createElement('select');
+      sp.textContent='Kid '+(i+1)+' age';se.id='age'+i;
+      for(var a=0;a<=17;a++){var o=document.createElement('option');o.value=a;o.textContent=a===0?'Under 1':a+(a===1?' yr':' yrs');se.appendChild(o);}
+      se.value=age;se.addEventListener('change',function(){who.ages[i]=+se.value;calc();});
+      l.appendChild(sp);l.appendChild(se);box.appendChild(l);
+    });
+  }
+  $('pplBtn').addEventListener('click',function(){var open=$('pplBox').hidden;$('pplBox').hidden=!open;this.setAttribute('aria-expanded',open);});
+  document.querySelectorAll('.cnt').forEach(function(b){
+    b.addEventListener('click',function(){
+      var k=b.dataset.k,d=+b.dataset.d;
+      if(k==='adults'){var v=who.adults+d;if(v>=LIM.adults[0]&&v<=LIM.adults[1])who.adults=v;}
+      else{var n=who.ages.length+d;if(n>=LIM.kids[0]&&n<=LIM.kids[1]){if(d>0)who.ages.push(NEW_KID_AGE);else who.ages.pop();drawAges();}}
+      calc();
+    });
+  });
+  $('nminus').addEventListener('click',function(){if(nights>CERT_NIGHTS){nights--;calc();}});
+  $('nplus').addEventListener('click',function(){if(nights<30){nights++;calc();}});
+  $('m-inc').addEventListener('click',function(){setMode('inc')});
+  $('m-sep').addEventListener('click',function(){setMode('sep')});
+  sel.addEventListener('change',calc);
+  ['paid','flights'].forEach(function(id){var el=$(id);el.addEventListener('input',function(){fit(el);calc();});el.addEventListener('blur',function(){pretty(el)});el.addEventListener('focus',function(){var e=this;setTimeout(function(){e.select()},0)});});
+  $('reset').addEventListener('click',function(){reset();$('paid').focus();});
+
+  reset();
+})();
+</script>
+
+</body></html>
